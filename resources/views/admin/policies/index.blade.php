@@ -54,11 +54,11 @@
                                     <a href="{{ route('admin.policies.edit', $policy->id) }}" class="btn-icon btn-secondary" title="{{ __('Edit') }}">
                                         <i class="ri-edit-2-line"></i>
                                     </a>
-                                    <form action="{{ route('admin.policies.destroy', $policy->id) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this policy?') }}')">
+                                    <form id="delete-policy-form-{{ $policy->id }}" action="{{ route('admin.policies.destroy', $policy->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-icon btn-danger" title="{{ __('Delete') }}">
-                                            <i class="ri-delete-bin-line"></i>
+                                        <button type="button" class="btn btn-danger btn-icon" title="{{ __('Delete Policy') }}" onclick="showGlobalConfirmPopup('delete-policy-form-{{ $policy->id }}', '{{ __('Are you sure you want to delete this policy?') }}')">
+                                            <i class="ri-delete-bin-fill"></i>
                                         </button>
                                     </form>
                                 </div>

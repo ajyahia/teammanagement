@@ -206,10 +206,10 @@
                 </form>
 
                 @if(!$isHoliday)
-                <form method="POST" action="/admin/attendance/mark-all-present" onsubmit="return confirm('{{ __('Are you sure you want to mark all employees as present for this date?') }}');">
+                <form id="mark-all-present-form" method="POST" action="/admin/attendance/mark-all-present" style="display:inline;">
                     @csrf
                     <input type="hidden" name="date" value="{{ $date }}">
-                    <button type="submit" class="btn btn-primary" style="padding: 9px 16px; background-color: var(--green); border-color: var(--green);">
+                    <button type="button" class="btn btn-primary" style="padding: 9px 16px; background-color: var(--green); border-color: var(--green);" onclick="showGlobalConfirmPopup('mark-all-present-form', '{{ __('Are you sure you want to mark all employees as present for this date?') }}')">
                         <i class="ri-checkbox-circle-fill"></i>
                         <span>{{ __('Mark All Present') }}</span>
                     </button>
@@ -298,10 +298,10 @@
                         </form>
                         
                         @if($record)
-                            <form action="/admin/attendance/{{ $record->id }}" method="POST" class="clear-form" onsubmit="return confirm('{{ __('Do you want to clear this attendance record?') }}');" style="display: block; width: 100%;">
+                            <form id="clear-record-form-{{ $record->id }}" action="/admin/attendance/{{ $record->id }}" method="POST" class="clear-form" style="display: block; width: 100%;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn-clear-record" title="{{ __('Clear Record') }}">
+                                <button type="button" class="btn-clear-record" title="{{ __('Clear Record') }}" onclick="showGlobalConfirmPopup('clear-record-form-{{ $record->id }}', '{{ __('Do you want to clear this attendance record?') }}')">
                                     <i class="ri-delete-bin-fill" style="font-size: 1.1rem;"></i>
                                     <span class="btn-text">{{ __('Clear Record') }}</span>
                                 </button>

@@ -40,3 +40,23 @@
         <span>{{ __('Settings') }}</span>
     </a>
 </li>
+
+<!-- CRM & Projects -->
+<li class="sidebar-item {{ request()->is('admin/clients*') ? 'active' : '' }}">
+    <a href="/admin/clients">
+        <i class="ri-contacts-book-2-fill"></i>
+        <span>{{ __('Clients') }}</span>
+    </a>
+</li>
+<li class="sidebar-item {{ request()->is('admin/services*') ? 'active' : '' }}">
+    <a href="/admin/services">
+        <i class="ri-customer-service-2-fill"></i>
+        <span>{{ __('Services') }}</span>
+    </a>
+</li>
+<li class="sidebar-item {{ request()->is('admin/projects*') ? 'active' : '' }}">
+    <a href="/admin/projects">
+        <i class="ri-briefcase-4-fill"></i>
+        <span>{{ __('Projects') }}</span>
+    </a>
+</li>

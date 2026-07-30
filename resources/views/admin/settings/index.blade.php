@@ -268,11 +268,11 @@
                                 <td style="padding: 12px 16px; font-size: 0.85rem;">{{ $holiday->date->format('Y-m-d') }}</td>
                                 <td style="padding: 12px 16px; font-size: 0.85rem; color: var(--color-primary-light);">{{ $holiday->name ?: __('Official Holiday') }}</td>
                                 <td style="padding: 12px 16px; text-align: center;">
-                                    <form action="/admin/settings/specific/{{ $holiday->id }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to remove this holiday date?') }}');">
+                                    <form id="delete-holiday-form-{{ $holiday->id }}" action="/admin/settings/specific/{{ $holiday->id }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-clear-record" title="{{ __('Delete') }}" style="width: 28px; height: 28px;">
-                                            <i class="ri-delete-bin-fill" style="font-size: 0.95rem;"></i>
+                                        <button type="button" class="btn btn-danger btn-icon" title="{{ __('Remove Holiday') }}" onclick="showGlobalConfirmPopup('delete-holiday-form-{{ $holiday->id }}', '{{ __('Are you sure you want to remove this holiday date?') }}')">
+                                            <i class="ri-delete-bin-fill"></i>
                                         </button>
                                     </form>
                                 </td>

@@ -176,14 +176,13 @@
                             @endif
                         </div>
 
-                        <form method="POST" action="/admin/salaries/{{ $user->id }}/unpay" onsubmit="return confirm('{{ __('Are you sure you want to cancel this payment record?') }}')">
+                        <form id="unpay-form-{{ $user->id }}" method="POST" action="/admin/salaries/{{ $user->id }}/unpay" style="display:inline;">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="month" value="{{ (int)$month }}">
                             <input type="hidden" name="year" value="{{ $year }}">
-                            <button type="submit" class="btn btn-secondary" style="width: 100%; padding: 10px; border-radius: var(--radius-md); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; background-color: rgba(239, 68, 68, 0.1); color: rgb(239, 68, 68); border-color: rgba(239, 68, 68, 0.2);">
-                                <i class="ri-close-circle-line" style="font-size: 1.1rem;"></i>
-                                <span>{{ __('Cancel Payment') }}</span>
+                            <button type="button" class="btn btn-warning" onclick="showGlobalConfirmPopup('unpay-form-{{ $user->id }}', '{{ __('Are you sure you want to cancel this payment record?') }}')" style="width: 100%; padding: 10px; border-radius: var(--radius-md); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; background-color: rgba(239, 68, 68, 0.1); color: rgb(239, 68, 68); border-color: rgba(239, 68, 68, 0.2);">
+                                <i class="ri-close-circle-line" style="font-size: 1.1rem;"></i> <span>{{ __('Cancel Payment') }}</span>
                             </button>
                         </form>
                     @else
@@ -320,11 +319,11 @@
                                     @endif
                                 </td>
                                 <td style="text-align: center;">
-                                    <form method="POST" action="/admin/salaries/adjustments/{{ $adj->id }}" style="display: inline;" onsubmit="return confirm('{{ __('Are you sure you want to delete this adjustment?') }}')">
+                                    <form id="delete-adj-form-{{ $adj->id }}" method="POST" action="/admin/salaries/adjustments/{{ $adj->id }}" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-adj-delete" title="{{ __('Delete') }}">
-                                            <i class="ri-delete-bin-line"></i>
+                                        <button type="button" class="btn btn-danger btn-icon" onclick="showGlobalConfirmPopup('delete-adj-form-{{ $adj->id }}', '{{ __('Are you sure you want to delete this adjustment?') }}')">
+                                            <i class="ri-delete-bin-fill"></i>
                                         </button>
                                     </form>
                                 </td>

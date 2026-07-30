@@ -1,0 +1,111 @@
+@extends('layouts.app')
+
+@section('title', __('Projects & Orders'))
+@section('page_header', __('Projects & Orders'))
+
+@section('sidebar_menu')
+    @include('layouts.sidebar_admin')
+@endsection
+
+@section('content')
+    <div class="card" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h3 style="margin: 0; font-family: var(--font-title); font-weight: 700;">{{ __('All Projects') }}</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">{{ __('Track services, assign employees, and monitor profits') }}</p>
+            </div>
+            <div>
+                <a href="{{ route('admin.projects.create') }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="ri-add-line"></i>
+                    <span>{{ __('Create Project') }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Widgets -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <div class="card" style="padding: 20px; border-left: 4px solid var(--color-primary);">
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Revenue') }}</p>
+            <h3 style="margin: 0; color: var(--text-primary); font-family: var(--font-title);">{{ number_format($projects->sum('agreed_price'), 2) }}</h3>
+        </div>
+        <div class="card" style="padding: 20px; border-left: 4px solid var(--orange);">
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Costs') }}</p>
+            <h3 style="margin: 0; color: var(--text-primary); font-family: var(--font-title);">{{ number_format($projects->sum('cost'), 2) }}</h3>
+        </div>
+        <div class="card" style="padding: 20px; border-left: 4px solid var(--green);">
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Net Profit') }}</p>
+            <h3 style="margin: 0; color: var(--green); font-family: var(--font-title);">{{ number_format($projects->sum('profit'), 2) }}</h3>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ __('Service') }}</th>
+                        <th>{{ __('Client') }}</th>
+                        <th>{{ __('Assigned To') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Price') }}</th>
+                        <th>{{ __('Profit') }}</th>
+                        <th style="text-align: center;">{{ __('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($projects as $project)
+                        <tr>
+                            <td>
+                                <strong>{{ $project->service->name }}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">#{{ $project->id }}</div>
+                            </td>
+                            <td>{{ $project->client->name }}</td>
+                            <td>
+                                @if($project->employee)
+                                    <span class="badge badge-present">{{ $project->employee->name }}</span>
+                                @else
+                                    <span class="badge badge-absent">{{ __('Unassigned') }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $statusColor = match($project->status) {
+                                        'completed' => 'badge-present',
+                                        'in_progress' => 'badge-vacation',
+                                        'cancelled' => 'badge-absent',
+                                        default => 'badge-excused'
+                                    };
+                                @endphp
+                                <span class="badge {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</span>
+                            </td>
+                            <td>{{ number_format($project->agreed_price, 2) }}</td>
+                            <td style="color: var(--green); font-weight: bold;">{{ number_format($project->profit, 2) }}</td>
+                            <td>
+                                <div style="display: flex; justify-content: center; gap: 8px;">
+                                    <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn-icon btn-secondary" title="{{ __('Edit Project') }}">
+                                        <i class="ri-edit-2-line"></i>
+                                    </a>
+                                    <form id="delete-project-form-{{ $project->id }}" action="{{ route('admin.projects.destroy', $project->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-danger btn-icon" title="{{ __('Delete Project') }}" onclick="showGlobalConfirmPopup('delete-project-form-{{ $project->id }}', '{{ __('Are you sure you want to delete this project?') }}')">
+                                            <i class="ri-delete-bin-fill"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px;">
+                                <i class="ri-briefcase-4-line" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 10px; display: block;"></i>
+                                <p style="color: var(--text-secondary); margin: 0;">{{ __('No projects found. Create one!') }}</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
