@@ -57,12 +57,12 @@
                     <!-- Language Switcher Toggle -->
                     <div class="language-switcher">
                         @if(app()->getLocale() === 'en')
-                            <a href="{{ request()->url() }}/ar{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="lang-btn">
+                            <a href="{{ route('lang.switch', 'ar') }}" class="lang-btn">
                                 <i class="ri-global-line"></i>
                                 <span>العربية</span>
                             </a>
                         @else
-                            <a href="{{ request()->url() }}/en{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="lang-btn">
+                            <a href="{{ route('lang.switch', 'en') }}" class="lang-btn">
                                 <i class="ri-global-line"></i>
                                 <span>English</span>
                             </a>

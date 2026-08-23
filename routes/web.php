@@ -126,26 +126,10 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// Fallback Route for locale switching
-Route::fallback(function (\Illuminate\Http\Request $request) {
-    $path = $request->getPathInfo();
-    
-    $locale = null;
-    if (str_ends_with($path, '/ar') || $path === '/ar') {
-        $locale = 'ar';
-        $cleanPath = $path === '/ar' ? '/' : substr($path, 0, -3);
-    } elseif (str_ends_with($path, '/en') || $path === '/en') {
-        $locale = 'en';
-        $cleanPath = $path === '/en' ? '/' : substr($path, 0, -3);
-    }
-
-    if ($locale !== null) {
+// Language switching route
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['ar', 'en'])) {
         session(['locale' => $locale]);
-        
-        $queryString = $request->getQueryString();
-        $redirectUrl = $cleanPath . ($queryString ? '?' . $queryString : '');
-        return redirect($redirectUrl);
     }
-
-    abort(404);
-});
+    return redirect()->back();
+})->name('lang.switch');
