@@ -120,7 +120,29 @@
                 </div>
 
                 <!-- Action Button -->
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                    @if($r['is_paid'])
+                        <form action="/admin/salaries/{{ $emp->id }}/unpay" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="month" value="{{ $month }}">
+                            <input type="hidden" name="year" value="{{ $year }}">
+                            <button type="submit" class="btn-salary-action" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); cursor: pointer;" title="{{ __('Mark as Unpaid') }}">
+                                <i class="ri-close-circle-line"></i>
+                            </button>
+                        </form>
+                    @else
+                        <form action="/admin/salaries/{{ $emp->id }}/pay" method="POST" style="display:inline;">
+                            @csrf
+                            <input type="hidden" name="month" value="{{ $month }}">
+                            <input type="hidden" name="year" value="{{ $year }}">
+                            <input type="hidden" name="amount" value="{{ $r['net_salary'] }}">
+                            <button type="submit" class="btn-salary-action" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); cursor: pointer;" title="{{ __('Mark as Paid') }}">
+                                <i class="ri-check-double-line"></i>
+                            </button>
+                        </form>
+                    @endif
+
                     <a href="/admin/salaries/{{ $emp->id }}/details?month={{ $month }}&year={{ $year }}" class="btn-salary-action" title="{{ __('Salary Details') }}">
                         <i class="ri-eye-line"></i>
                     </a>

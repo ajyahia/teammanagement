@@ -25,7 +25,7 @@ class StoreSalaryAdjustmentRequest extends FormRequest
             'user_id' => ['required', 'exists:users,id'],
             'month' => ['required', 'numeric', 'min:1', 'max:12'],
             'year' => ['required', 'numeric', 'min:2020', 'max:2100'],
-            'type' => ['required', 'in:bonus,deduction'],
+            'type' => ['required', 'in:bonus,deduction,advance'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];

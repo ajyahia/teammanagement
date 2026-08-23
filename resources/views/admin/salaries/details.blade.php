@@ -247,6 +247,7 @@
                     <select name="type" id="type" class="adj-form-select" required>
                         <option value="bonus">{{ __('Bonus') }} (+)</option>
                         <option value="deduction">{{ __('Deduction') }} (-)</option>
+                        <option value="advance">{{ __('Advance/Loan (سلفة)') }} (-)</option>
                     </select>
                 </div>
 
@@ -297,6 +298,8 @@
                                 <td>
                                     @if($adj->type === 'bonus')
                                         <span class="badge-bonus">{{ __('Bonus') }}</span>
+                                    @elseif($adj->type === 'advance')
+                                        <span class="badge" style="background-color: rgba(245, 158, 11, 0.1); color: var(--yellow, #f59e0b); border: 1px solid rgba(245, 158, 11, 0.2); padding: 4px 8px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600;">{{ __('Advance') }}</span>
                                     @else
                                         <span class="badge-deduction">{{ __('Deduction') }}</span>
                                     @endif

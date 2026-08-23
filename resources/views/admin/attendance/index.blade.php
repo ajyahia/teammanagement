@@ -321,11 +321,17 @@
         document.addEventListener('DOMContentLoaded', function () {
             // Initialize Flatpickr for custom date picker
             const localeStr = "{{ app()->getLocale() === 'ar' ? 'ar' : 'default' }}";
+            const weeklyHolidays = @json($weeklyHolidays ?? []);
             flatpickr("#date", {
                 locale: localeStr,
                 dateFormat: "Y-m-d",
                 defaultDate: "{{ $date }}",
                 disableMobile: true,
+                disable: [
+                    function(date) {
+                        return weeklyHolidays.includes(date.getDay());
+                    }
+                ],
                 onChange: function(selectedDates, dateStr, instance) {
                     // Submit the form automatically when date changes
                     instance.element.closest('form').submit();

@@ -37,8 +37,7 @@ class AdminAttendanceController extends Controller
         } elseif ($isWeeklyHoliday) {
             $holidayName = __('Weekly Holiday');
         }
-
-        return view('admin.attendance.index', compact('employees', 'attendanceRecords', 'date', 'isHoliday', 'holidayName'));
+        return view('admin.attendance.index', compact('employees', 'attendanceRecords', 'date', 'isHoliday', 'holidayName', 'weeklyHolidays'));
     }
 
     /**
@@ -182,6 +181,14 @@ class AdminAttendanceController extends Controller
             ->get()
             ->keyBy(fn($r) => $r->date->format('Y-m-d'));
 
+        $weeklyHolidaysJson = \App\Models\Setting::getVal('weekly_holidays', '[]');
+        $weeklyHolidays = json_decode($weeklyHolidaysJson, true) ?? [];
+        $specificHolidays = \App\Models\SpecificHoliday::whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->pluck('date')
+            ->map(fn($d) => $d->format('Y-m-d'))
+            ->toArray();
+
         $firstDay = strtotime("$year-$month-01");
         $lastDay = strtotime("last day of this month", $firstDay);
 
@@ -208,11 +215,13 @@ class AdminAttendanceController extends Controller
 
                 if ($currentMonth == $month) {
                     $record = $records->get($dateStr);
+                    $isHoliday = in_array($wIndex, $weeklyHolidays) || in_array($dateStr, $specificHolidays);
                     $week['days'][$wIndex] = [
                         'date' => $dateStr,
                         'day_num' => date('d', $current),
                         'status' => $record ? $record->status : 'none',
-                        'notes' => $record ? $record->notes : ''
+                        'notes' => $record ? $record->notes : '',
+                        'is_holiday' => $isHoliday
                     ];
                 } else {
                     $week['days'][$wIndex] = null;
