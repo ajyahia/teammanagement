@@ -23,10 +23,8 @@
                     <tr>
                         <th>{{ __('Employee') }}</th>
                         <th>{{ __('Username') }}</th>
-                        <th>{{ __('Email') }}</th>
                         <th>{{ __('Job Title') }}</th>
                         <th>{{ __('Role') }}</th>
-                        <th>{{ __('Work Shift') }}</th>
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -42,19 +40,13 @@
                                 </div>
                             </td>
                             <td><code style="color: var(--color-primary-light);">{{ $emp->username }}</code></td>
-                            <td>{{ $emp->email }}</td>
                             <td>{{ $emp->job_title }}</td>
                             <td>
                                 <span class="badge {{ $emp->role === 'admin' ? 'badge-present' : 'badge-excused' }}">
                                     {{ __($emp->role === 'admin' ? 'Admin' : 'Employee') }}
                                 </span>
                             </td>
-                            <td>
-                                <i class="ri-time-line" style="vertical-align: middle; color: var(--text-secondary);"></i>
-                                <span style="vertical-align: middle;">
-                                    {{ $emp->work_start_time ? $emp->work_start_time->format('H:i') : '09:00' }} - {{ $emp->work_end_time ? $emp->work_end_time->format('H:i') : '17:00' }}
-                                </span>
-                            </td>
+                          
                             <td>
                                 <div style="display: flex; gap: 8px;">
                                     <a href="/admin/employees/{{ $emp->id }}/edit" class="btn btn-secondary btn-icon" title="{{ __('Edit Profile') }}">
