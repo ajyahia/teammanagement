@@ -11,7 +11,67 @@
     <!-- Custom Style Sheet -->
     <link rel="stylesheet" href="/css/style.css">
     
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
     @yield('styles')
+    
+    <style>
+        /* Select2 Dark Theme Customization */
+        .select2-container--default .select2-selection--multiple {
+            background-color: var(--bg-card, #1e1e2d);
+            border: 1px solid var(--border-color, #2b2b40);
+            border-radius: 8px;
+            min-height: 45px;
+            padding: 5px 10px;
+        }
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: var(--color-primary, #009efd);
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: rgba(0, 158, 253, 0.1);
+            border: 1px solid rgba(0, 158, 253, 0.2);
+            color: var(--color-primary-light, #33b5ff);
+            border-radius: 6px;
+            padding: 4px 8px;
+            margin-top: 4px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: var(--color-primary, #009efd);
+            margin-right: 8px;
+            border-right: 1px solid rgba(0, 158, 253, 0.2);
+            padding-right: 8px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            background-color: transparent;
+            color: #f1416c;
+        }
+        .select2-dropdown {
+            background-color: var(--bg-card, #1e1e2d);
+            border: 1px solid var(--border-color, #2b2b40);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            color: var(--text-main, #fff);
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            background-color: var(--bg-main, #151521);
+            border: 1px solid var(--border-color, #2b2b40);
+            color: var(--text-main, #fff);
+            border-radius: 6px;
+        }
+        .select2-container--default .select2-results__option--selected {
+            background-color: rgba(0, 158, 253, 0.1);
+        }
+        .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+            background-color: var(--color-primary, #009efd);
+            color: white;
+        }
+        .select2-container--default .select2-results__option[aria-disabled=true] {
+            color: var(--text-secondary, #92929f);
+            opacity: 0.5;
+            display: none; /* Hide disabled options to mimic exact filtering */
+        }
+    </style>
 </head>
 <body dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <div class="app-container">
@@ -302,6 +362,20 @@
             });
         });
     </script>
+    
+    <!-- jQuery & Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2-multiple').select2({
+                placeholder: "{{ __('Select options...') }}",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+    </script>
+    
     @yield('scripts')
 </body>
 </html>

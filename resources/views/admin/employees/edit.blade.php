@@ -60,7 +60,7 @@
 
                 <div class="form-group">
                     <label for="services">{{ __('Services') }}</label>
-                    <select name="services[]" id="services" class="form-control" multiple style="height: 120px;">
+                    <select name="services[]" id="services" class="form-control select2-multiple" multiple>
                         @foreach($services as $service)
                             <option value="{{ $service->id }}" {{ (in_array($service->id, old('services', $employee->services->pluck('id')->toArray()))) ? 'selected' : '' }}>
                                 {{ $service->name }}

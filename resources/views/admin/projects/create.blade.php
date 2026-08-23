@@ -40,7 +40,7 @@
 
             <div class="form-group">
                 <label class="form-label">{{ __('Assign To Employees') }}</label>
-                <select name="employee_ids[]" id="employee_ids" class="form-control" multiple style="height: 120px;">
+                <select name="employee_ids[]" id="employee_ids" class="form-control select2-multiple" multiple>
                     @foreach($employees as $emp)
                         <option value="{{ $emp->id }}" data-services="{{ json_encode($emp->services->pluck('id')) }}" {{ (is_array(old('employee_ids')) && in_array($emp->id, old('employee_ids'))) ? 'selected' : '' }}>
                             {{ $emp->name }}
@@ -144,20 +144,23 @@
                 
                 Array.from(employeeSelect.options).forEach(option => {
                     if (!serviceId) {
-                        option.style.display = 'block';
                         option.disabled = false;
                         return;
                     }
                     
                     const services = JSON.parse(option.getAttribute('data-services') || '[]');
                     if (services.includes(serviceId)) {
-                        option.style.display = 'block';
                         option.disabled = false;
                     } else {
-                        option.style.display = 'none';
                         option.disabled = true;
                         option.selected = false;
                     }
+                });
+                // Re-initialize Select2 to apply the disabled states
+                $(employeeSelect).select2({
+                    placeholder: "{{ __('Select options...') }}",
+                    allowClear: true,
+                    width: '100%'
                 });
             }
             
