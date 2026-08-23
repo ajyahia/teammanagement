@@ -28,7 +28,7 @@
             </ul>
             
             <div class="sidebar-footer">
-                <form action="{{ route('logout') }}" method="POST" class="logout-form">
+                <form action="{{ auth()->guard('client')->check() ? route('client.logout') : route('logout') }}" method="POST" class="logout-form">
                     @csrf
                     <button type="submit">
                         <i class="ri-logout-box-r-line"></i>
@@ -57,27 +57,39 @@
                     <!-- Language Switcher Toggle -->
                     <div class="language-switcher">
                         @if(app()->getLocale() === 'en')
-                            <a href="{{ request()->url() }}/ar{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="lang-btn">
+                            <a href="{{ route('lang.switch', 'ar') }}" class="lang-btn">
                                 <i class="ri-global-line"></i>
                                 <span>العربية</span>
                             </a>
                         @else
-                            <a href="{{ request()->url() }}/en{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="lang-btn">
+                            <a href="{{ route('lang.switch', 'en') }}" class="lang-btn">
                                 <i class="ri-global-line"></i>
                                 <span>English</span>
                             </a>
                         @endif
                     </div>
 
-                    <a href="{{ auth()->user()->role === 'admin' ? '/admin/employees/' . auth()->user()->id . '/edit' : '/employee/profile' }}" class="user-profile" style="text-decoration: none;">
-                        <div class="user-info">
-                            <span class="user-name">{{ auth()->user()->name }}</span>
-                            <span class="user-role">{{ __(ucfirst(auth()->user()->role)) }}</span>
+                    @if(auth()->guard('client')->check())
+                        <div class="user-profile" style="text-decoration: none;">
+                            <div class="user-info">
+                                <span class="user-name">{{ auth()->guard('client')->user()->name }}</span>
+                                <span class="user-role">{{ __('Client') }}</span>
+                            </div>
+                            <div class="user-avatar" style="background: rgba(0, 158, 253, 0.1); color: var(--color-primary);">
+                                {{ strtoupper(substr(auth()->guard('client')->user()->name, 0, 1)) }}
+                            </div>
                         </div>
-                        <div class="user-avatar">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </div>
-                    </a>
+                    @else
+                        <a href="{{ auth()->user()->role === 'admin' ? '/admin/employees/' . auth()->user()->id . '/edit' : '/employee/profile' }}" class="user-profile" style="text-decoration: none;">
+                            <div class="user-info">
+                                <span class="user-name">{{ auth()->user()->name }}</span>
+                                <span class="user-role">{{ __(ucfirst(auth()->user()->role)) }}</span>
+                            </div>
+                            <div class="user-avatar">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                        </a>
+                    @endif
                 </div>
             </header>
             
@@ -103,8 +115,110 @@
         </div>
     </div>
 
+    <!-- Global Confirm Modal -->
+    <div id="globalConfirmModal" class="custom-modal-overlay" style="display: none;">
+        <div class="custom-modal">
+            <div class="modal-icon">
+                <i class="ri-alert-line"></i>
+            </div>
+            <h4 class="modal-title">{{ __('Are you sure?') }}</h4>
+            <p class="modal-text" id="globalConfirmMessage">{{ __('Are you sure you want to perform this action? This action cannot be undone.') }}</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeGlobalConfirmPopup()">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-danger" id="globalConfirmBtn">{{ __('Confirm') }}</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+        .custom-modal {
+            background: var(--bg-card, #1e1e2d);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            animation: scaleUp 0.3s forwards;
+            border: 1px solid var(--border-color, #2b2b40);
+        }
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(241, 65, 108, 0.1);
+            color: #f1416c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 16px;
+        }
+        .modal-title {
+            color: var(--text-main, #fff);
+            margin: 0 0 10px;
+            font-family: var(--font-title, sans-serif);
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        .modal-text {
+            color: var(--text-secondary, #92929f);
+            margin: 0 0 24px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+            to { transform: scale(1); }
+        }
+    </style>
+
     <!-- Core Javascript -->
     <script>
+        let globalFormToSubmitId = null;
+
+        function showGlobalConfirmPopup(formId, message) {
+            globalFormToSubmitId = formId;
+            const modal = document.getElementById('globalConfirmModal');
+            const messageEl = document.getElementById('globalConfirmMessage');
+            if(message) {
+                messageEl.textContent = message;
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeGlobalConfirmPopup() {
+            const modal = document.getElementById('globalConfirmModal');
+            modal.style.display = 'none';
+            globalFormToSubmitId = null;
+        }
+
+        document.getElementById('globalConfirmBtn')?.addEventListener('click', function() {
+            if (globalFormToSubmitId) {
+                document.getElementById(globalFormToSubmitId).submit();
+            }
+        });
+
         document.getElementById('sidebar-toggle')?.addEventListener('click', function() {
             document.getElementById('app-sidebar').classList.toggle('open');
         });

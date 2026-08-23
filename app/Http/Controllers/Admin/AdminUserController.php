@@ -33,19 +33,10 @@ class AdminUserController extends Controller
     {
         $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'age' => ['nullable', 'integer', 'min:15', 'max:100'],
             'job_title' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'max:20'],
-            'whatsapp' => ['nullable', 'string', 'max:20'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'username' => ['required', 'string', 'max:50', 'unique:users'],
             'password' => ['required', 'string', 'min:6'],
             'role' => ['required', 'string', Rule::in(['admin', 'employee'])],
-            'linkedin' => ['nullable', 'string', 'max:255'],
-            'facebook' => ['nullable', 'string', 'max:255'],
-            'instagram' => ['nullable', 'string', 'max:255'],
-            'work_start_time' => ['required', 'date_format:H:i'],
-            'work_end_time' => ['required', 'date_format:H:i'],
             'salary' => ['required', 'numeric', 'min:0'],
         ]);
 
@@ -70,19 +61,10 @@ class AdminUserController extends Controller
     {
         $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'age' => ['nullable', 'integer', 'min:15', 'max:100'],
             'job_title' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'max:20'],
-            'whatsapp' => ['nullable', 'string', 'max:20'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($employee->id)],
             'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($employee->id)],
             'password' => ['nullable', 'string', 'min:6'],
             'role' => ['required', 'string', Rule::in(['admin', 'employee'])],
-            'linkedin' => ['nullable', 'string', 'max:255'],
-            'facebook' => ['nullable', 'string', 'max:255'],
-            'instagram' => ['nullable', 'string', 'max:255'],
-            'work_start_time' => ['required', 'date_format:H:i'],
-            'work_end_time' => ['required', 'date_format:H:i'],
             'salary' => ['required', 'numeric', 'min:0'],
         ]);
 

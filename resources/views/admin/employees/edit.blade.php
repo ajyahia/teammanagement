@@ -25,11 +25,7 @@
                     @error('name') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="age">{{ __('Age') }}</label>
-                    <input type="number" name="age" id="age" value="{{ old('age', $employee->age) }}">
-                    @error('age') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
+
 
                 <div class="form-group">
                     <label for="job_title">{{ __('Job Title') }} *</label>
@@ -37,23 +33,9 @@
                     @error('job_title') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="phone">{{ __('Phone Number') }} *</label>
-                    <input type="text" name="phone" id="phone" value="{{ old('phone', $employee->phone) }}" required>
-                    @error('phone') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
 
-                <div class="form-group">
-                    <label for="whatsapp">{{ __('WhatsApp Number') }}</label>
-                    <input type="text" name="whatsapp" id="whatsapp" value="{{ old('whatsapp', $employee->whatsapp) }}">
-                    @error('whatsapp') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
 
-                <div class="form-group">
-                    <label for="email">{{ __('Email Address') }} *</label>
-                    <input type="email" name="email" id="email" value="{{ old('email', $employee->email) }}" required>
-                    @error('email') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
+
 
                 <div class="form-group">
                     <label for="username">{{ __('Username') }} *</label>
@@ -76,17 +58,7 @@
                     @error('role') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="work_start_time">{{ __('Shift Start Time') }} (HH:MM) *</label>
-                    <input type="text" name="work_start_time" id="work_start_time" placeholder="{{ __('e.g. 09:00') }}" value="{{ old('work_start_time', $employee->work_start_time ? $employee->work_start_time->format('H:i') : '09:00') }}" required>
-                    @error('work_start_time') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
 
-                <div class="form-group">
-                    <label for="work_end_time">{{ __('Shift End Time') }} (HH:MM) *</label>
-                    <input type="text" name="work_end_time" id="work_end_time" placeholder="{{ __('e.g. 17:00') }}" value="{{ old('work_end_time', $employee->work_end_time ? $employee->work_end_time->format('H:i') : '17:00') }}" required>
-                    @error('work_end_time') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
 
                 <div class="form-group">
                     <label for="salary">{{ __('Basic Salary') }} *</label>
@@ -94,23 +66,7 @@
                     @error('salary') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="linkedin">{{ __('LinkedIn Profile URL') }}</label>
-                    <input type="url" name="linkedin" id="linkedin" value="{{ old('linkedin', $employee->linkedin) }}">
-                    @error('linkedin') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
 
-                <div class="form-group">
-                    <label for="facebook">{{ __('Facebook Profile URL') }}</label>
-                    <input type="url" name="facebook" id="facebook" value="{{ old('facebook', $employee->facebook) }}">
-                    @error('facebook') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="instagram">{{ __('Instagram Profile URL') }}</label>
-                    <input type="url" name="instagram" id="instagram" value="{{ old('instagram', $employee->instagram) }}">
-                    @error('instagram') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
-                </div>
             </div>
             
             <div class="form-actions">

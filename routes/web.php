@@ -13,6 +13,14 @@ use App\Http\Controllers\Employee\EmployeeProfileController;
 use App\Http\Controllers\Employee\EmployeeAttendanceController;
 use App\Http\Controllers\Employee\EmployeeSalaryController;
 use App\Http\Controllers\Employee\EmployeePolicyController;
+use App\Http\Controllers\Admin\ClientController as AdminClientController;
+use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
+use App\Http\Controllers\Admin\ProjectPaymentController as AdminProjectPaymentController;
+use App\Http\Controllers\Employee\ProjectController as EmployeeProjectController;
+use App\Http\Controllers\Client\ClientAuthController;
+use App\Http\Controllers\Client\ClientDashboardController;
+use App\Http\Controllers\Client\ClientProjectController;
 
 // Redirect root to dashboard (which handles role-based redirects) or login
 Route::get('/', function () {
@@ -30,7 +38,21 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-// Authenticated Routes
+// Client Portal Guest Routes
+Route::middleware('guest:client')->prefix('client')->name('client.')->group(function () {
+    Route::get('/login', [ClientAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [ClientAuthController::class, 'login']);
+});
+
+// Client Portal Authenticated Routes
+Route::middleware('auth:client')->prefix('client')->name('client.')->group(function () {
+    Route::post('/logout', [ClientAuthController::class, 'logout'])->name('logout');
+    Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/projects', [ClientProjectController::class, 'index'])->name('projects.index');
+    Route::get('/projects/{project}', [ClientProjectController::class, 'show'])->name('projects.show');
+});
+
+// Authenticated Routes (Admin/Employee)
 Route::middleware('auth')->group(function () {
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -66,6 +88,18 @@ Route::middleware('auth')->group(function () {
 
         // Company Policies CRUD
         Route::resource('policies', AdminPolicyController::class)->except(['show']);
+
+        // CRM & Projects CRUD
+        Route::resource('clients', AdminClientController::class);
+        Route::post('/clients/{client}/password', [AdminClientController::class, 'updatePassword'])->name('clients.password');
+        
+        Route::resource('services', AdminServiceController::class)->except(['show']);
+        Route::resource('projects', AdminProjectController::class)->except(['show']);
+        
+        // Project Payments
+        Route::post('/projects/{project}/payments', [AdminProjectPaymentController::class, 'store'])->name('projects.payments.store');
+        Route::put('/payments/{payment}', [AdminProjectPaymentController::class, 'update'])->name('projects.payments.update');
+        Route::delete('/payments/{payment}', [AdminProjectPaymentController::class, 'destroy'])->name('projects.payments.destroy');
     });
 
     // Employee Group
@@ -85,29 +119,17 @@ Route::middleware('auth')->group(function () {
 
         // View Company Policies
         Route::get('/policies', [EmployeePolicyController::class, 'index'])->name('policies.index');
+
+        // View Assigned Projects
+        Route::get('/projects', [EmployeeProjectController::class, 'index'])->name('projects.index');
+        Route::patch('/projects/{project}/status', [EmployeeProjectController::class, 'updateStatus'])->name('projects.update_status');
     });
 });
 
-// Fallback Route for locale switching
-Route::fallback(function (\Illuminate\Http\Request $request) {
-    $path = $request->getPathInfo();
-    
-    $locale = null;
-    if (str_ends_with($path, '/ar') || $path === '/ar') {
-        $locale = 'ar';
-        $cleanPath = $path === '/ar' ? '/' : substr($path, 0, -3);
-    } elseif (str_ends_with($path, '/en') || $path === '/en') {
-        $locale = 'en';
-        $cleanPath = $path === '/en' ? '/' : substr($path, 0, -3);
-    }
-
-    if ($locale !== null) {
+// Language switching route
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['ar', 'en'])) {
         session(['locale' => $locale]);
-        
-        $queryString = $request->getQueryString();
-        $redirectUrl = $cleanPath . ($queryString ? '?' . $queryString : '');
-        return redirect($redirectUrl);
     }
-
-    abort(404);
-});
+    return redirect()->back();
+})->name('lang.switch');

@@ -28,3 +28,9 @@
         <span>{{ __('Company Policy') }}</span>
     </a>
 </li>
+<li class="sidebar-item {{ request()->is('employee/projects*') ? 'active' : '' }}">
+    <a href="/employee/projects">
+        <i class="ri-briefcase-4-line"></i>
+        <span>{{ __('My Projects') }}</span>
+    </a>
+</li>
