@@ -108,6 +108,15 @@
                         @endphp
                         <strong style="color: {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</strong>
                         | {{ __('Agreed Price:') }} <strong>{{ number_format($project->agreed_price, 2) }}</strong>
+                        <br><br>
+                        {{ __('Assigned Employees:') }} 
+                        @if($project->employees->count() > 0)
+                            @foreach($project->employees as $emp)
+                                <span class="badge badge-present" style="font-size: 0.75rem; padding: 2px 6px;">{{ $emp->name }}</span>
+                            @endforeach
+                        @else
+                            <span class="badge badge-absent" style="font-size: 0.75rem; padding: 2px 6px;">{{ __('Unassigned') }}</span>
+                        @endif
                     </span>
                 </div>
                 <div>

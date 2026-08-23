@@ -12,7 +12,6 @@ class Project extends Model
     protected $fillable = [
         'client_id',
         'service_id',
-        'employee_id',
         'agreed_price',
         'cost',
         'billing_type',
@@ -40,9 +39,9 @@ class Project extends Model
         return $this->belongsTo(Service::class);
     }
 
-    public function employee()
+    public function employees()
     {
-        return $this->belongsTo(User::class, 'employee_id');
+        return $this->belongsToMany(User::class, 'project_user');
     }
 
     public function getProfitAttribute()

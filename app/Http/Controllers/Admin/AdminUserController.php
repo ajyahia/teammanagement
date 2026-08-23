@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +15,7 @@ class AdminUserController extends Controller
      */
     public function index()
     {
-        $employees = User::where('role', 'employee')->get();
+        $employees = User::with('services')->where('role', 'employee')->get();
         return view('admin.employees.index', compact('employees'));
     }
 
@@ -23,7 +24,8 @@ class AdminUserController extends Controller
      */
     public function create()
     {
-        return view('admin.employees.create');
+        $services = Service::all();
+        return view('admin.employees.create', compact('services'));
     }
 
     /**
@@ -38,10 +40,16 @@ class AdminUserController extends Controller
             'password' => ['required', 'string', 'min:6'],
             'role' => ['required', 'string', Rule::in(['admin', 'employee'])],
             'salary' => ['required', 'numeric', 'min:0'],
+            'services' => ['nullable', 'array'],
+            'services.*' => ['exists:services,id'],
         ]);
 
         $validatedData['password_text'] = $validatedData['password'];
-        User::create($validatedData);
+        $user = User::create($validatedData);
+
+        if (isset($validatedData['services'])) {
+            $user->services()->sync($validatedData['services']);
+        }
 
         return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully.');
     }
@@ -51,7 +59,9 @@ class AdminUserController extends Controller
      */
     public function edit(User $employee)
     {
-        return view('admin.employees.edit', compact('employee'));
+        $services = Service::all();
+        $employee->load('services');
+        return view('admin.employees.edit', compact('employee', 'services'));
     }
 
     /**
@@ -66,6 +76,8 @@ class AdminUserController extends Controller
             'password' => ['nullable', 'string', 'min:6'],
             'role' => ['required', 'string', Rule::in(['admin', 'employee'])],
             'salary' => ['required', 'numeric', 'min:0'],
+            'services' => ['nullable', 'array'],
+            'services.*' => ['exists:services,id'],
         ]);
 
         if (empty($validatedData['password'])) {
@@ -75,6 +87,12 @@ class AdminUserController extends Controller
         }
 
         $employee->update($validatedData);
+
+        if (isset($validatedData['services'])) {
+            $employee->services()->sync($validatedData['services']);
+        } else {
+            $employee->services()->detach();
+        }
 
         return redirect()->route('admin.employees.index')->with('success', 'Employee updated successfully.');
     }

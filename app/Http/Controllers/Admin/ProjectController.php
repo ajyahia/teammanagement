@@ -13,7 +13,7 @@ class ProjectController extends Controller
 {
     public function index()
     {
-        $projects = Project::with(['client', 'service', 'employee'])->latest()->get();
+        $projects = Project::with(['client', 'service', 'employees'])->latest()->get();
         return view('admin.projects.index', compact('projects'));
     }
 
@@ -21,7 +21,7 @@ class ProjectController extends Controller
     {
         $clients = Client::orderBy('name')->get();
         $services = Service::orderBy('name')->get();
-        $employees = User::where('role', 'employee')->orderBy('name')->get();
+        $employees = User::with('services')->where('role', 'employee')->orderBy('name')->get();
         return view('admin.projects.create', compact('clients', 'services', 'employees'));
     }
 
@@ -30,7 +30,8 @@ class ProjectController extends Controller
         $data = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'service_id' => 'required|exists:services,id',
-            'employee_id' => 'nullable|exists:users,id',
+            'employee_ids' => 'nullable|array',
+            'employee_ids.*' => 'exists:users,id',
             'agreed_price' => 'required|numeric|min:0',
             'cost' => 'required|numeric|min:0',
             'status' => 'required|string|in:pending,in_progress,completed,cancelled',
@@ -45,7 +46,11 @@ class ProjectController extends Controller
             $data['subscription_status'] = null;
         }
 
-        Project::create($data);
+        $employeeIds = $data['employee_ids'] ?? [];
+        unset($data['employee_ids']);
+
+        $project = Project::create($data);
+        $project->employees()->sync($employeeIds);
         return redirect()->route('admin.projects.index')->with('success', 'Project created successfully.');
     }
 
@@ -53,7 +58,7 @@ class ProjectController extends Controller
     {
         $clients = Client::orderBy('name')->get();
         $services = Service::orderBy('name')->get();
-        $employees = User::where('role', 'employee')->orderBy('name')->get();
+        $employees = User::with('services')->where('role', 'employee')->orderBy('name')->get();
         return view('admin.projects.edit', compact('project', 'clients', 'services', 'employees'));
     }
 
@@ -62,7 +67,8 @@ class ProjectController extends Controller
         $data = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'service_id' => 'required|exists:services,id',
-            'employee_id' => 'nullable|exists:users,id',
+            'employee_ids' => 'nullable|array',
+            'employee_ids.*' => 'exists:users,id',
             'agreed_price' => 'required|numeric|min:0',
             'cost' => 'required|numeric|min:0',
             'status' => 'required|string|in:pending,in_progress,completed,cancelled',
@@ -77,7 +83,11 @@ class ProjectController extends Controller
             $data['subscription_status'] = null;
         }
 
+        $employeeIds = $data['employee_ids'] ?? [];
+        unset($data['employee_ids']);
+
         $project->update($data);
+        $project->employees()->sync($employeeIds);
         return redirect()->route('admin.projects.index')->with('success', 'Project updated successfully.');
     }
 

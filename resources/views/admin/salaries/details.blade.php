@@ -251,6 +251,12 @@
                     </select>
                 </div>
 
+                <!-- Date Input -->
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                    <label for="created_at" style="font-weight: 600; font-size: 0.85rem;">{{ __('Date') }}</label>
+                    <input type="date" name="created_at" id="created_at" required value="{{ date('Y-m-d') }}" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-body, var(--bg-main)); color: var(--text-primary);">
+                </div>
+
                 <!-- Amount Input -->
                 <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
                     <label for="amount" style="font-weight: 600; font-size: 0.85rem;">{{ __('Amount') }}</label>

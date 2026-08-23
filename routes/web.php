@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\ClientController as AdminClientController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Admin\ProjectPaymentController as AdminProjectPaymentController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Employee\ProjectController as EmployeeProjectController;
 use App\Http\Controllers\Client\ClientAuthController;
 use App\Http\Controllers\Client\ClientDashboardController;
@@ -100,6 +101,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/projects/{project}/payments', [AdminProjectPaymentController::class, 'store'])->name('projects.payments.store');
         Route::put('/payments/{payment}', [AdminProjectPaymentController::class, 'update'])->name('projects.payments.update');
         Route::delete('/payments/{payment}', [AdminProjectPaymentController::class, 'destroy'])->name('projects.payments.destroy');
+
+        // Reports & Analytics
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     });
 
     // Employee Group

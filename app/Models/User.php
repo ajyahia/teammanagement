@@ -79,4 +79,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(SalaryPayment::class);
     }
+
+    /**
+     * Get the services associated with the user.
+     */
+    public function services(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Service::class);
+    }
+
+    /**
+     * Get the projects associated with the user.
+     */
+    public function projects(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_user');
+    }
 }

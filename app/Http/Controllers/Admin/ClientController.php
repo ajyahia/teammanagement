@@ -35,7 +35,7 @@ class ClientController extends Controller
 
     public function show(Client $client)
     {
-        $client->load(['projects.service', 'projects.payments']);
+        $client->load(['projects.service', 'projects.payments', 'projects.employees']);
         
         $totalProjects = $client->projects->count();
         $totalRevenue = $client->projects->sum('agreed_price');

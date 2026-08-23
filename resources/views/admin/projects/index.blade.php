@@ -62,8 +62,12 @@
                             </td>
                             <td>{{ $project->client->name }}</td>
                             <td>
-                                @if($project->employee)
-                                    <span class="badge badge-present">{{ $project->employee->name }}</span>
+                                @if($project->employees->count() > 0)
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                        @foreach($project->employees as $emp)
+                                            <span class="badge badge-present" style="font-size: 0.75rem; padding: 2px 6px;">{{ $emp->name }}</span>
+                                        @endforeach
+                                    </div>
                                 @else
                                     <span class="badge badge-absent">{{ __('Unassigned') }}</span>
                                 @endif

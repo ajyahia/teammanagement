@@ -75,7 +75,7 @@ class AdminSalaryController extends Controller
     {
         $validatedData = $request->validated();
 
-        SalaryAdjustment::create([
+        $adjustment = SalaryAdjustment::create([
             'user_id' => $validatedData['user_id'],
             'month' => (int)$validatedData['month'],
             'year' => (int)$validatedData['year'],
@@ -85,6 +85,9 @@ class AdminSalaryController extends Controller
             'deduction' => 0,
             'notes' => $validatedData['notes'] ?? null,
         ]);
+        
+        $adjustment->created_at = \Carbon\Carbon::parse($validatedData['created_at']);
+        $adjustment->save(['timestamps' => false]);
 
         return redirect()->back()->with('success', __('Adjustment added successfully.'));
     }

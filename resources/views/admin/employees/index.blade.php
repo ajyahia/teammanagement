@@ -25,6 +25,7 @@
                         <th>{{ __('Username') }}</th>
                         <th>{{ __('Job Title') }}</th>
                         <th>{{ __('Role') }}</th>
+                        <th>{{ __('Services') }}</th>
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -46,7 +47,17 @@
                                     {{ __($emp->role === 'admin' ? 'Admin' : 'Employee') }}
                                 </span>
                             </td>
-                          
+                            <td>
+                                @if($emp->services->count() > 0)
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                        @foreach($emp->services as $service)
+                                            <span class="badge badge-vacation" style="font-size: 0.75rem; padding: 2px 6px;">{{ $service->name }}</span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span style="color: var(--text-secondary); font-size: 0.8rem;">{{ __('None') }}</span>
+                                @endif
+                            </td>
                             <td>
                                 <div style="display: flex; gap: 8px;">
                                     <a href="/admin/employees/{{ $emp->id }}/edit" class="btn btn-secondary btn-icon" title="{{ __('Edit Profile') }}">

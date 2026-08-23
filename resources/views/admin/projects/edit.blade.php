@@ -38,13 +38,15 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">{{ __('Assign To Employee') }}</label>
-                <select name="employee_id" class="form-control">
-                    <option value="">-- {{ __('Unassigned') }} --</option>
+                <label class="form-label">{{ __('Assign To Employees') }}</label>
+                <select name="employee_ids[]" id="employee_ids" class="form-control" multiple style="height: 120px;">
                     @foreach($employees as $emp)
-                        <option value="{{ $emp->id }}" {{ old('employee_id', $project->employee_id) == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
+                        <option value="{{ $emp->id }}" data-services="{{ json_encode($emp->services->pluck('id')) }}" {{ (is_array(old('employee_ids', $project->employees->pluck('id')->toArray())) && in_array($emp->id, old('employee_ids', $project->employees->pluck('id')->toArray()))) ? 'selected' : '' }}>
+                            {{ $emp->name }}
+                        </option>
                     @endforeach
                 </select>
+                <small style="color: var(--text-secondary); display: block; margin-top: 4px;">{{ __('Hold Ctrl (Windows) or Command (Mac) to select multiple. Only employees matching the selected service are shown.') }}</small>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -130,6 +132,42 @@
             
             billingSelect.addEventListener('change', toggleSubscriptionStatus);
             toggleSubscriptionStatus();
+
+            // Employee Service Filtering
+            const serviceSelect = document.querySelector('select[name="service_id"]');
+            const employeeSelect = document.getElementById('employee_ids');
+            
+            function filterEmployees() {
+                const serviceId = parseInt(serviceSelect.value);
+                
+                Array.from(employeeSelect.options).forEach(option => {
+                    if (!serviceId) {
+                        option.style.display = 'block';
+                        option.disabled = false;
+                        return;
+                    }
+                    
+                    const services = JSON.parse(option.getAttribute('data-services') || '[]');
+                    if (services.includes(serviceId)) {
+                        option.style.display = 'block';
+                        option.disabled = false;
+                    } else {
+                        option.style.display = 'none';
+                        option.disabled = true;
+                        // Don't deselect automatically in edit mode to avoid losing data if service isn't changed manually
+                    }
+                });
+            }
+            
+            if(serviceSelect) {
+                serviceSelect.addEventListener('change', function() {
+                    Array.from(employeeSelect.options).forEach(opt => {
+                        if(opt.style.display === 'none') opt.selected = false;
+                    });
+                    filterEmployees();
+                });
+                filterEmployees();
+            }
         });
     </script>
 @endsection

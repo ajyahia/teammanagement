@@ -60,3 +60,9 @@
         <span>{{ __('Projects') }}</span>
     </a>
 </li>
+<li class="sidebar-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
+    <a href="/admin/reports">
+        <i class="ri-bar-chart-box-fill"></i>
+        <span>{{ __('Reports & Analytics') }}</span>
+    </a>
+</li>

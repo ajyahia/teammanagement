@@ -57,8 +57,18 @@
                     @error('role') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
-
-
+                <div class="form-group">
+                    <label for="services">{{ __('Services') }}</label>
+                    <select name="services[]" id="services" multiple style="height: 120px;">
+                        @foreach($services as $service)
+                            <option value="{{ $service->id }}" {{ (collect(old('services'))->contains($service->id)) ? 'selected' : '' }}>
+                                {{ $service->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <small style="color: var(--text-secondary); font-size: 0.8rem;">{{ __('Hold Ctrl (Windows) or Command (Mac) to select multiple.') }}</small>
+                    @error('services') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
+                </div>
                 <div class="form-group">
                     <label for="salary">{{ __('Basic Salary') }} *</label>
                     <input type="number" step="0.01" name="salary" id="salary" placeholder="{{ __('e.g. 5000') }}" value="{{ old('salary', '0.00') }}" required>
