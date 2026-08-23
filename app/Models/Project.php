@@ -20,6 +20,8 @@ class Project extends Model
         'notes',
         'start_date',
         'deadline',
+        'page_count',
+        'price_per_page',
     ];
 
     protected $casts = [

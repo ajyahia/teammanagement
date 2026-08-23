@@ -74,13 +74,52 @@ class ReportController extends Controller
                 }
             }
 
+            $monthlySalaryPaid = \App\Models\SalaryPayment::where('user_id', $emp->id)->where('month', (int)$month)->where('year', (int)$year)->sum('amount');
+            $allTimeSalaryPaid = \App\Models\SalaryPayment::where('user_id', $emp->id)->sum('amount');
+
             return [
                 'name' => $emp->name,
                 'all_time_revenue' => $allTimeRevenue,
                 'monthly_revenue' => $monthlyRevenue,
+                'monthly_salary' => $monthlySalaryPaid,
+                'all_time_salary' => $allTimeSalaryPaid,
+                'monthly_profit' => $monthlyRevenue - $monthlySalaryPaid,
+                'all_time_profit' => $allTimeRevenue - $allTimeSalaryPaid,
             ];
         });
 
-        return view('admin.reports.index', compact('serviceStats', 'employeeStats', 'month', 'year', 'selectedDate'));
+        // ---------------------------------------------------------
+        // Calculate Company Totals (Revenue, Salaries, Profit)
+        // ---------------------------------------------------------
+
+        // 1. Total Revenue (sum of all service stats)
+        $totalMonthlyRevenue = $serviceStats->sum('monthly_revenue');
+        $totalAllTimeRevenue = $serviceStats->sum('all_time_revenue');
+
+        // 2. Total Salaries (from SalaryPayment)
+        $totalMonthlySalaries = \App\Models\SalaryPayment::where('month', (int)$month)->where('year', (int)$year)->sum('amount');
+        $totalAllTimeSalaries = \App\Models\SalaryPayment::sum('amount');
+
+        // 3. Net Profit
+        $monthlyNetProfit = $totalMonthlyRevenue - $totalMonthlySalaries;
+        $allTimeNetProfit = $totalAllTimeRevenue - $totalAllTimeSalaries;
+
+        $financialSummary = [
+            'monthly_revenue' => $totalMonthlyRevenue,
+            'monthly_salaries' => $totalMonthlySalaries,
+            'monthly_net_profit' => $monthlyNetProfit,
+            'all_time_revenue' => $totalAllTimeRevenue,
+            'all_time_salaries' => $totalAllTimeSalaries,
+            'all_time_net_profit' => $allTimeNetProfit,
+        ];
+
+        return view('admin.reports.index', compact(
+            'serviceStats', 
+            'employeeStats', 
+            'month', 
+            'year', 
+            'selectedDate',
+            'financialSummary'
+        ));
     }
 }

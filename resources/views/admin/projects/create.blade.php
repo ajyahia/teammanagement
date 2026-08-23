@@ -76,8 +76,10 @@
                 <div class="form-group">
                     <label class="form-label">{{ __('Billing Type') }} <span style="color: red;">*</span></label>
                     <select name="billing_type" class="form-control" required id="billing_type_select">
-                        <option value="one_time" {{ old('billing_type') == 'one_time' ? 'selected' : '' }}>{{ __('One Time Payment (Installments)') }}</option>
+                        <option value="one_time" {{ old('billing_type') == 'one_time' ? 'selected' : '' }}>{{ __('One Time Payment (Fixed)') }}</option>
                         <option value="monthly" {{ old('billing_type') == 'monthly' ? 'selected' : '' }}>{{ __('Monthly Subscription') }}</option>
+                        <option value="yearly" {{ old('billing_type') == 'yearly' ? 'selected' : '' }}>{{ __('Annual Subscription') }}</option>
+                        <option value="per_page" {{ old('billing_type') == 'per_page' ? 'selected' : '' }}>{{ __('Per Page (Books)') }}</option>
                     </select>
                 </div>
                 
@@ -90,13 +92,24 @@
                 </div>
             </div>
 
+            <div id="per_page_group" style="display: none; grid-template-columns: 1fr 1fr; gap: 20px; background: rgba(0,0,0,0.05); padding: 15px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">{{ __('Number of Pages') }} <span style="color: red;">*</span></label>
+                    <input type="number" id="page_count" name="page_count" class="form-control" value="{{ old('page_count') }}" min="1">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">{{ __('Price per Page') }} <span style="color: red;">*</span></label>
+                    <input type="number" step="0.01" id="price_per_page" name="price_per_page" class="form-control" value="{{ old('price_per_page') }}" min="0">
+                </div>
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="form-group">
-                    <label class="form-label">{{ __('Start Date') }}</label>
+                    <label class="form-label" id="start_date_label">{{ __('Start Date') }}</label>
                     <input type="date" name="start_date" class="form-control" value="{{ old('start_date') }}">
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="deadline_group">
                     <label class="form-label">{{ __('Deadline') }}</label>
                     <input type="date" name="deadline" class="form-control" value="{{ old('deadline') }}">
                 </div>
@@ -122,17 +135,51 @@
         document.addEventListener('DOMContentLoaded', function() {
             const billingSelect = document.getElementById('billing_type_select');
             const subGroup = document.getElementById('subscription_status_group');
+            const perPageGroup = document.getElementById('per_page_group');
+            const agreedPriceInput = document.querySelector('input[name="agreed_price"]');
+            const pageCountInput = document.getElementById('page_count');
+            const pricePerPageInput = document.getElementById('price_per_page');
+            const startDateLabel = document.getElementById('start_date_label');
+            const deadlineGroup = document.getElementById('deadline_group');
             
-            function toggleSubscriptionStatus() {
-                if(billingSelect.value === 'monthly') {
+            function toggleBillingFields() {
+                // Subscription
+                if(billingSelect.value === 'monthly' || billingSelect.value === 'yearly') {
                     subGroup.style.display = 'block';
+                    startDateLabel.innerHTML = '{{ __('Service Payment Date') }}';
+                    deadlineGroup.style.display = 'none';
                 } else {
                     subGroup.style.display = 'none';
+                    startDateLabel.innerHTML = '{{ __('Start Date') }}';
+                    deadlineGroup.style.display = 'block';
+                }
+
+                // Per Page
+                if(billingSelect.value === 'per_page') {
+                    perPageGroup.style.display = 'grid';
+                    agreedPriceInput.readOnly = true;
+                    agreedPriceInput.style.background = 'var(--bg-hover)';
+                    calculateAgreedPrice();
+                } else {
+                    perPageGroup.style.display = 'none';
+                    agreedPriceInput.readOnly = false;
+                    agreedPriceInput.style.background = '';
                 }
             }
             
-            billingSelect.addEventListener('change', toggleSubscriptionStatus);
-            toggleSubscriptionStatus();
+            function calculateAgreedPrice() {
+                if(billingSelect.value === 'per_page') {
+                    const pages = parseFloat(pageCountInput.value) || 0;
+                    const price = parseFloat(pricePerPageInput.value) || 0;
+                    agreedPriceInput.value = (pages * price).toFixed(2);
+                }
+            }
+
+            billingSelect.addEventListener('change', toggleBillingFields);
+            pageCountInput.addEventListener('input', calculateAgreedPrice);
+            pricePerPageInput.addEventListener('input', calculateAgreedPrice);
+            
+            toggleBillingFields();
 
             // Employee Service Filtering
             const serviceSelect = document.querySelector('select[name="service_id"]');

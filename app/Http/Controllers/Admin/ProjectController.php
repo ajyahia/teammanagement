@@ -35,15 +35,24 @@ class ProjectController extends Controller
             'agreed_price' => 'required|numeric|min:0',
             'paid_amount' => 'required|numeric|min:0',
             'status' => 'required|string|in:pending,in_progress,completed,cancelled',
-            'billing_type' => 'required|string|in:one_time,monthly',
+            'billing_type' => 'required|string|in:one_time,monthly,per_page,yearly',
             'subscription_status' => 'nullable|string|in:active,stopped',
+            'page_count' => 'nullable|integer|min:1|required_if:billing_type,per_page',
+            'price_per_page' => 'nullable|numeric|min:0|required_if:billing_type,per_page',
             'notes' => 'nullable|string',
             'start_date' => 'nullable|date',
             'deadline' => 'nullable|date',
         ]);
 
-        if ($data['billing_type'] !== 'monthly') {
+        if (!in_array($data['billing_type'], ['monthly', 'yearly'])) {
             $data['subscription_status'] = null;
+        }
+        
+        if ($data['billing_type'] === 'per_page') {
+            $data['agreed_price'] = $data['page_count'] * $data['price_per_page'];
+        } else {
+            $data['page_count'] = null;
+            $data['price_per_page'] = null;
         }
 
         $employeeIds = $data['employee_ids'] ?? [];
@@ -72,15 +81,24 @@ class ProjectController extends Controller
             'agreed_price' => 'required|numeric|min:0',
             'paid_amount' => 'required|numeric|min:0',
             'status' => 'required|string|in:pending,in_progress,completed,cancelled',
-            'billing_type' => 'required|string|in:one_time,monthly',
+            'billing_type' => 'required|string|in:one_time,monthly,per_page,yearly',
             'subscription_status' => 'nullable|string|in:active,stopped',
+            'page_count' => 'nullable|integer|min:1|required_if:billing_type,per_page',
+            'price_per_page' => 'nullable|numeric|min:0|required_if:billing_type,per_page',
             'notes' => 'nullable|string',
             'start_date' => 'nullable|date',
             'deadline' => 'nullable|date',
         ]);
 
-        if ($data['billing_type'] !== 'monthly') {
+        if (!in_array($data['billing_type'], ['monthly', 'yearly'])) {
             $data['subscription_status'] = null;
+        }
+        
+        if ($data['billing_type'] === 'per_page') {
+            $data['agreed_price'] = $data['page_count'] * $data['price_per_page'];
+        } else {
+            $data['page_count'] = null;
+            $data['price_per_page'] = null;
         }
 
         $employeeIds = $data['employee_ids'] ?? [];
