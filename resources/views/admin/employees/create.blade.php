@@ -59,7 +59,7 @@
 
                 <div class="form-group">
                     <label for="services">{{ __('Services') }}</label>
-                    <select name="services[]" id="services" multiple style="height: 120px;">
+                    <select name="services[]" id="services" class="form-control" multiple style="height: 120px;">
                         @foreach($services as $service)
                             <option value="{{ $service->id }}" {{ (collect(old('services'))->contains($service->id)) ? 'selected' : '' }}>
                                 {{ $service->name }}
