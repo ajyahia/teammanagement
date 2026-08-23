@@ -193,10 +193,10 @@
                                         </button>
                                     </form>
                                     
-                                    <form action="{{ route('admin.projects.cycles.destroy', $cycle->id) }}" method="POST" style="margin:0;" onsubmit="return confirm('{{ __('Are you sure you want to delete this cycle?') }}');">
+                                    <form id="delete-cycle-{{ $cycle->id }}" action="{{ route('admin.projects.cycles.destroy', $cycle->id) }}" method="POST" style="margin:0;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-icon" title="{{ __('Delete Cycle') }}">
+                                        <button type="button" class="btn btn-danger btn-icon" title="{{ __('Delete Cycle') }}" onclick="showGlobalConfirmPopup('delete-cycle-{{ $cycle->id }}', '{{ __('Are you sure you want to delete this cycle?') }}')">
                                             <i class="ri-delete-bin-fill"></i>
                                         </button>
                                     </form>
