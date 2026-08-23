@@ -65,7 +65,7 @@ class SalaryService
 
             $userAdjustments = $allAdjustments->get($emp->id, collect());
             $manualBonus = $userAdjustments->where('type', 'bonus')->sum('amount') + $userAdjustments->sum('bonus');
-            $manualDeduction = $userAdjustments->where('type', 'deduction')->sum('amount') + $userAdjustments->sum('deduction');
+            $manualDeduction = $userAdjustments->whereIn('type', ['deduction', 'advance'])->sum('amount') + $userAdjustments->sum('deduction');
 
             $totalDeductions = $absentDeduction + $manualDeduction;
             $totalBonuses = $manualBonus;
@@ -130,7 +130,7 @@ class SalaryService
             ->get();
 
         $manualBonus = $adjustments->where('type', 'bonus')->sum('amount') + $adjustments->sum('bonus');
-        $manualDeduction = $adjustments->where('type', 'deduction')->sum('amount') + $adjustments->sum('deduction');
+        $manualDeduction = $adjustments->whereIn('type', ['deduction', 'advance'])->sum('amount') + $adjustments->sum('deduction');
 
         $netSalary = $baseSalary - $absentDeduction - $manualDeduction + $manualBonus;
         if ($netSalary < 0) $netSalary = 0.00;
