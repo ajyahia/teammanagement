@@ -59,9 +59,16 @@ class SalaryService
         $reports = [];
         foreach ($employees as $emp) {
             $absentDays = $absentRecords->has($emp->id) ? $absentRecords->get($emp->id)->count() : 0;
-            $baseSalary = (float)$emp->salary;
-            $deductionPerDay = $expectedWorkingDays > 0 ? $baseSalary / $expectedWorkingDays : 0.00;
-            $absentDeduction = $deductionPerDay * $absentDays;
+            
+            if ($emp->payment_type === 'per_project') {
+                $monthlyProjectsCount = $emp->projects()->whereYear('projects.created_at', $year)->whereMonth('projects.created_at', $month)->count();
+                $baseSalary = (float)$emp->project_rate * $monthlyProjectsCount;
+                $absentDeduction = 0.00; // No absent deduction for per-project workers
+            } else {
+                $baseSalary = (float)$emp->salary;
+                $deductionPerDay = $expectedWorkingDays > 0 ? $baseSalary / $expectedWorkingDays : 0.00;
+                $absentDeduction = $deductionPerDay * $absentDays;
+            }
 
             $userAdjustments = $allAdjustments->get($emp->id, collect());
             $manualBonus = $userAdjustments->where('type', 'bonus')->sum('amount') + $userAdjustments->sum('bonus');
@@ -119,9 +126,15 @@ class SalaryService
             ->where('status', 'present')
             ->count();
 
-        $baseSalary = (float)$user->salary;
-        $deductionPerDay = $expectedWorkingDays > 0 ? $baseSalary / $expectedWorkingDays : 0.00;
-        $absentDeduction = $deductionPerDay * $absentDays;
+        if ($user->payment_type === 'per_project') {
+            $monthlyProjectsCount = $user->projects()->whereYear('projects.created_at', $year)->whereMonth('projects.created_at', $month)->count();
+            $baseSalary = (float)$user->project_rate * $monthlyProjectsCount;
+            $absentDeduction = 0.00;
+        } else {
+            $baseSalary = (float)$user->salary;
+            $deductionPerDay = $expectedWorkingDays > 0 ? $baseSalary / $expectedWorkingDays : 0.00;
+            $absentDeduction = $deductionPerDay * $absentDays;
+        }
 
         $adjustments = SalaryAdjustment::where('user_id', $user->id)
             ->where('month', (int)$month)

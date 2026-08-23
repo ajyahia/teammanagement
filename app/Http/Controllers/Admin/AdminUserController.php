@@ -39,7 +39,9 @@ class AdminUserController extends Controller
             'username' => ['required', 'string', 'max:50', 'unique:users'],
             'password' => ['required', 'string', 'min:6'],
             'role' => ['required', 'string', Rule::in(['admin', 'employee'])],
-            'salary' => ['required', 'numeric', 'min:0'],
+            'salary' => ['required_if:payment_type,monthly_salary', 'nullable', 'numeric', 'min:0'],
+            'payment_type' => ['required', 'string', Rule::in(['monthly_salary', 'per_project'])],
+            'project_rate' => ['required_if:payment_type,per_project', 'nullable', 'numeric', 'min:0'],
             'services' => ['nullable', 'array'],
             'services.*' => ['exists:services,id'],
         ]);
@@ -75,7 +77,9 @@ class AdminUserController extends Controller
             'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($employee->id)],
             'password' => ['nullable', 'string', 'min:6'],
             'role' => ['required', 'string', Rule::in(['admin', 'employee'])],
-            'salary' => ['required', 'numeric', 'min:0'],
+            'salary' => ['required_if:payment_type,monthly_salary', 'nullable', 'numeric', 'min:0'],
+            'payment_type' => ['required', 'string', Rule::in(['monthly_salary', 'per_project'])],
+            'project_rate' => ['required_if:payment_type,per_project', 'nullable', 'numeric', 'min:0'],
             'services' => ['nullable', 'array'],
             'services.*' => ['exists:services,id'],
         ]);

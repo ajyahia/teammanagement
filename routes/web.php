@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
         // System Settings
         Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
         Route::post('/settings/weekly', [AdminSettingsController::class, 'saveWeekly'])->name('settings.weekly');
+        Route::post('/settings/budget', [AdminSettingsController::class, 'saveBudget'])->name('settings.budget');
         Route::post('/settings/specific', [AdminSettingsController::class, 'addSpecific'])->name('settings.specific');
         Route::delete('/settings/specific/{holiday}', [AdminSettingsController::class, 'deleteSpecific'])->name('settings.specific.delete');
 
@@ -101,6 +102,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/projects/{project}/payments', [AdminProjectPaymentController::class, 'store'])->name('projects.payments.store');
         Route::put('/payments/{payment}', [AdminProjectPaymentController::class, 'update'])->name('projects.payments.update');
         Route::delete('/payments/{payment}', [AdminProjectPaymentController::class, 'destroy'])->name('projects.payments.destroy');
+
+        // Project Cycles
+        Route::post('/projects/{project}/cycles', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'store'])->name('projects.cycles.store');
+        Route::patch('/cycles/{cycle}/toggle-paid', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'togglePaid'])->name('projects.cycles.toggle_paid');
+        Route::delete('/cycles/{cycle}', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'destroy'])->name('projects.cycles.destroy');
 
         // Reports & Analytics
         Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');

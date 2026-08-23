@@ -71,12 +71,8 @@
         </div>
     </div>
 
-    <!-- Client Projects & Payments -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin: 0; font-family: var(--font-title); font-weight: 700;">{{ __('Projects & Payments') }}</h3>
-        <button class="btn btn-primary" onclick="openPaymentModal()" style="font-size: 0.9rem; padding: 8px 16px;">
-            <i class="ri-add-circle-line"></i> {{ __('Add Payment') }}
-        </button>
+        <h3 style="margin: 0; font-family: var(--font-title); font-weight: 700;">{{ __('Projects') }}</h3>
     </div>
     
     @forelse($client->projects as $project)
@@ -108,6 +104,8 @@
                         @endphp
                         <strong style="color: {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</strong>
                         | {{ __('Agreed Price:') }} <strong>{{ number_format($project->agreed_price, 2) }}</strong>
+                        | <span style="color: var(--green);">{{ __('Paid:') }} <strong>{{ number_format($project->paid_amount, 2) }}</strong></span>
+                        | <span style="color: var(--orange);">{{ __('Due:') }} <strong>{{ number_format($project->due_amount, 2) }}</strong></span>
                         <br><br>
                         {{ __('Assigned Employees:') }} 
                         @if($project->employees->count() > 0)
@@ -119,79 +117,7 @@
                         @endif
                     </span>
                 </div>
-                <div>
-                    <button class="btn btn-primary" onclick="openPaymentModal({{ $project->id }})" style="font-size: 0.85rem; padding: 6px 12px; background: rgba(0, 158, 253, 0.1); color: var(--color-primary); border: 1px solid var(--color-primary);">
-                        <i class="ri-add-line"></i> {{ __('Payment') }}
-                    </button>
                 </div>
-            </div>
-
-            <!-- Payments List -->
-            <div style="padding: 20px;">
-                @if($project->payments->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table" style="margin: 0;">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('Title / Description') }}</th>
-                                    <th>{{ __('Amount') }}</th>
-                                    <th>{{ __('Due Date') }}</th>
-                                    <th>{{ __('Status') }}</th>
-                                    <th>{{ __('Paid At') }}</th>
-                                    <th>{{ __('Actions') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($project->payments as $payment)
-                                    <tr>
-                                        <td>{{ $payment->title }}</td>
-                                        <td style="font-weight: bold;">{{ number_format($payment->amount, 2) }}</td>
-                                        <td>{{ $payment->due_date->format('Y-m-d') }}</td>
-                                        <td>
-                                            @if($payment->status === 'paid')
-                                                <span class="badge badge-present">{{ __('Paid') }}</span>
-                                            @elseif($payment->status === 'overdue')
-                                                <span class="badge badge-absent">{{ __('Overdue') }}</span>
-                                            @else
-                                                <span class="badge badge-excused">{{ __('Pending') }}</span>
-                                            @endif
-                                        </td>
-                                        <td>{{ $payment->paid_at ? $payment->paid_at->format('Y-m-d') : '-' }}</td>
-                                        <td>
-                                            <!-- Edit Payment Status Form -->
-                                            <form action="{{ route('admin.projects.payments.update', $payment->id) }}" method="POST" style="display:inline-flex; gap: 5px;">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="hidden" name="title" value="{{ $payment->title }}">
-                                                <input type="hidden" name="amount" value="{{ $payment->amount }}">
-                                                <input type="hidden" name="due_date" value="{{ $payment->due_date->format('Y-m-d') }}">
-                                                
-                                                <select name="status" class="form-control" style="padding: 4px; font-size: 0.8rem; width: auto;" onchange="this.form.submit()">
-                                                    <option value="pending" {{ $payment->status == 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
-                                                    <option value="paid" {{ $payment->status == 'paid' ? 'selected' : '' }}>{{ __('Paid') }}</option>
-                                                    <option value="overdue" {{ $payment->status == 'overdue' ? 'selected' : '' }}>{{ __('Overdue') }}</option>
-                                                </select>
-                                            </form>
-                                            
-                                            <form id="delete-payment-form-{{ $payment->id }}" action="{{ route('admin.projects.payments.destroy', $payment->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" class="btn-icon btn-danger" style="padding: 4px;" title="{{ __('Delete') }}" onclick="showGlobalConfirmPopup('delete-payment-form-{{ $payment->id }}', '{{ __('Are you sure you want to delete this payment?') }}')">
-                                                    <i class="ri-delete-bin-fill"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div style="text-align: center; color: var(--text-secondary); padding: 10px;">
-                        <i class="ri-money-dollar-circle-line" style="font-size: 2rem; display: block; margin-bottom: 5px;"></i>
-                        {{ __('No payments or installments added yet.') }}
-                    </div>
-                @endif
             </div>
         </div>
     @empty
@@ -201,51 +127,7 @@
         </div>
     @endforelse
 
-    <!-- Add Payment Modal -->
-    <div id="paymentModal" class="custom-modal-overlay" style="display: none;">
-        <div class="custom-modal" style="text-align: left; max-width: 500px;">
-            <h4 class="modal-title" style="margin-bottom: 20px;">{{ __('Add Payment / Installment') }}</h4>
-            <form id="addPaymentForm" method="POST" action="">
-                @csrf
-                <div class="form-group">
-                    <label class="form-label">{{ __('Service / Project') }} <span style="color: red;">*</span></label>
-                    <select id="modalProjectSelect" class="form-control" onchange="updatePaymentFormAction(this.value)">
-                        @foreach($client->projects as $p)
-                            <option value="{{ $p->id }}">{{ $p->service->name }} ({{ $p->billing_type === 'monthly' ? __('Monthly') : __('One Time') }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('Title / Description') }} <span style="color: red;">*</span></label>
-                    <input type="text" name="title" class="form-control" required placeholder="{{ __('e.g. First Installment, Monthly Sub') }}" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('Amount') }} <span style="color: red;">*</span></label>
-                    <input type="number" step="0.01" name="amount" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('Due Date') }} <span style="color: red;">*</span></label>
-                    <input type="date" name="due_date" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('Status') }}</label>
-                    <select name="status" class="form-control">
-                        <option value="pending">{{ __('Pending') }}</option>
-                        <option value="paid">{{ __('Paid (Now)') }}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('Notes') }}</label>
-                    <textarea name="notes" class="form-control" rows="2"></textarea>
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('paymentModal').style.display = 'none'">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ __('Save Payment') }}</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
 
     <!-- Set Password Modal -->
     <div id="passwordModal" class="custom-modal-overlay" style="display: none;">
@@ -268,26 +150,5 @@
         </div>
     </div>
 
-    <script>
-        function updatePaymentFormAction(projectId) {
-            const form = document.getElementById('addPaymentForm');
-            form.action = '/admin/projects/' + projectId + '/payments';
-        }
 
-        function openPaymentModal(projectId = null) {
-            const select = document.getElementById('modalProjectSelect');
-            if (projectId) {
-                select.value = projectId;
-            } else if (select.options.length > 0) {
-                select.selectedIndex = 0;
-            }
-            
-            if(select.value) {
-                updatePaymentFormAction(select.value);
-                document.getElementById('paymentModal').style.display = 'flex';
-            } else {
-                alert('{{ __("This client has no projects yet.") }}');
-            }
-        }
-    </script>
 @endsection

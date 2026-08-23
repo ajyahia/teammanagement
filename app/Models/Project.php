@@ -13,7 +13,7 @@ class Project extends Model
         'client_id',
         'service_id',
         'agreed_price',
-        'cost',
+        'paid_amount',
         'billing_type',
         'subscription_status',
         'status',
@@ -26,7 +26,7 @@ class Project extends Model
         'start_date' => 'date',
         'deadline' => 'date',
         'agreed_price' => 'decimal:2',
-        'cost' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
     ];
 
     public function client()
@@ -46,11 +46,21 @@ class Project extends Model
 
     public function getProfitAttribute()
     {
-        return $this->agreed_price - $this->cost;
+        return collect([$this->agreed_price])->first();
+    }
+
+    public function getDueAmountAttribute()
+    {
+        return $this->agreed_price - $this->paid_amount;
     }
 
     public function payments()
     {
         return $this->hasMany(ProjectPayment::class);
+    }
+
+    public function cycles()
+    {
+        return $this->hasMany(ProjectCycle::class);
     }
 }

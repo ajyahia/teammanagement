@@ -23,16 +23,30 @@ class ReportController extends Controller
         $serviceStats = $services->map(function ($service) use ($month, $year) {
             $allProjects = $service->projects;
             
-            $monthlyProjects = $allProjects->filter(function ($project) use ($month, $year) {
-                return $project->created_at->format('m-Y') === "{$month}-{$year}";
-            });
+            $allTimeRevenue = 0;
+            $monthlyRevenue = 0;
+
+            foreach ($allProjects as $project) {
+                // One time projects add their paid amount
+                if ($project->billing_type === 'one_time') {
+                    $allTimeRevenue += $project->paid_amount;
+                    if ($project->created_at->format('m-Y') === "{$month}-{$year}") {
+                        $monthlyRevenue += $project->paid_amount;
+                    }
+                } else {
+                    // Monthly projects sum their paid cycles
+                    $paidCycles = $project->cycles()->where('is_paid', true)->get();
+                    $allTimeRevenue += $paidCycles->sum('amount');
+                    $monthlyRevenue += $paidCycles->filter(function ($c) use ($month, $year) {
+                        return $c->paid_at && $c->paid_at->format('m-Y') === "{$month}-{$year}";
+                    })->sum('amount');
+                }
+            }
 
             return [
                 'name' => $service->name,
-                'all_time_revenue' => $allProjects->sum('agreed_price'),
-                'all_time_profit' => $allProjects->sum('profit'),
-                'monthly_revenue' => $monthlyProjects->sum('agreed_price'),
-                'monthly_profit' => $monthlyProjects->sum('profit'),
+                'all_time_revenue' => $allTimeRevenue,
+                'monthly_revenue' => $monthlyRevenue,
             ];
         });
 
@@ -41,17 +55,29 @@ class ReportController extends Controller
 
         $employeeStats = $employees->map(function ($emp) use ($month, $year) {
             $allProjects = $emp->projects;
+            
+            $allTimeRevenue = 0;
+            $monthlyRevenue = 0;
 
-            $monthlyProjects = $allProjects->filter(function ($project) use ($month, $year) {
-                return $project->created_at->format('m-Y') === "{$month}-{$year}";
-            });
+            foreach ($allProjects as $project) {
+                if ($project->billing_type === 'one_time') {
+                    $allTimeRevenue += $project->paid_amount;
+                    if ($project->created_at->format('m-Y') === "{$month}-{$year}") {
+                        $monthlyRevenue += $project->paid_amount;
+                    }
+                } else {
+                    $paidCycles = $project->cycles()->where('is_paid', true)->get();
+                    $allTimeRevenue += $paidCycles->sum('amount');
+                    $monthlyRevenue += $paidCycles->filter(function ($c) use ($month, $year) {
+                        return $c->paid_at && $c->paid_at->format('m-Y') === "{$month}-{$year}";
+                    })->sum('amount');
+                }
+            }
 
             return [
                 'name' => $emp->name,
-                'all_time_revenue' => $allProjects->sum('agreed_price'),
-                'all_time_profit' => $allProjects->sum('profit'),
-                'monthly_revenue' => $monthlyProjects->sum('agreed_price'),
-                'monthly_profit' => $monthlyProjects->sum('profit'),
+                'all_time_revenue' => $allTimeRevenue,
+                'monthly_revenue' => $monthlyRevenue,
             ];
         });
 

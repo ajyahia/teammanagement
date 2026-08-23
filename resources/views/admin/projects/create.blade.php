@@ -57,9 +57,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">{{ __('Estimated Cost (Expenses)') }} <span style="color: red;">*</span></label>
-                    <input type="number" step="0.01" name="cost" class="form-control" required value="{{ old('cost', '0.00') }}">
-                    <small style="color: var(--text-secondary); display: block; margin-top: 4px;">{{ __('Does not include employee base salary.') }}</small>
+                    <label class="form-label">{{ __('Amount Paid (By Client)') }} <span style="color: red;">*</span></label>
+                    <input type="number" step="0.1" name="paid_amount" class="form-control" required value="{{ old('paid_amount', '0.00') }}">
                 </div>
             </div>
 

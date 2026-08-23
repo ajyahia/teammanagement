@@ -18,8 +18,23 @@ class AdminSettingsController extends Controller
         $weeklyHolidays = json_decode($weeklyHolidaysJson, true) ?? [];
 
         $specificHolidays = SpecificHoliday::orderBy('date', 'asc')->get();
+        $budget = Setting::getVal('company_budget', 0);
 
-        return view('admin.settings.index', compact('weeklyHolidays', 'specificHolidays'));
+        return view('admin.settings.index', compact('weeklyHolidays', 'specificHolidays', 'budget'));
+    }
+
+    /**
+     * Save company budget.
+     */
+    public function saveBudget(Request $request)
+    {
+        $validatedData = $request->validate([
+            'company_budget' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        Setting::setVal('company_budget', $validatedData['company_budget']);
+
+        return redirect()->route('admin.settings.index')->with('success', 'Company budget updated successfully.');
     }
 
     /**

@@ -189,6 +189,28 @@
 @section('content')
     <div class="settings-grid">
         
+        <!-- Company Budget -->
+        <div class="card" style="grid-column: 1 / -1; margin-bottom: 0;">
+            <h3 class="card-title">
+                <i class="ri-wallet-3-fill" style="color: var(--green);"></i>
+                <span>{{ __('Company Budget / Treasury') }}</span>
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+                {{ __('Update the current total budget or available treasury for the company.') }}
+            </p>
+            
+            <form method="POST" action="{{ route('admin.settings.budget') }}" style="display: flex; gap: 15px; align-items: flex-end;">
+                @csrf
+                <div class="form-group" style="flex: 1; max-width: 300px; margin-bottom: 0;">
+                    <label class="form-label">{{ __('Current Budget') }} <span style="color: red;">*</span></label>
+                    <input type="number" step="0.01" name="company_budget" class="form-control" required value="{{ old('company_budget', $budget) }}" style="font-size: 1.2rem; font-weight: bold; color: var(--green);">
+                </div>
+                <button type="submit" class="btn btn-primary" style="height: 48px;">
+                    <i class="ri-save-fill"></i> {{ __('Save Budget') }}
+                </button>
+            </form>
+        </div>
+        
         <!-- Weekly Holidays -->
         <div class="card" style="margin-bottom: 0;">
             <h3 class="card-title">

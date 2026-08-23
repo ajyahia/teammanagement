@@ -45,9 +45,7 @@
                     <tr>
                         <th>{{ __('Service') }}</th>
                         <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->format('M Y') }})</small></th>
-                        <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Profit') }}</th>
                         <th>{{ __('All-Time Revenue') }}</th>
-                        <th>{{ __('All-Time Profit') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,9 +53,7 @@
                         <tr>
                             <td><strong>{{ $stat['name'] }}</strong></td>
                             <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--color-primary-light);">{{ number_format($stat['monthly_revenue'], 2) }}</td>
-                            <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--green);">{{ number_format($stat['monthly_profit'], 2) }}</td>
                             <td style="font-weight: bold;">{{ number_format($stat['all_time_revenue'], 2) }}</td>
-                            <td style="font-weight: bold; color: var(--green);">{{ number_format($stat['all_time_profit'], 2) }}</td>
                         </tr>
                     @endforeach
                     @if(count($serviceStats) === 0)
@@ -80,9 +76,7 @@
                     <tr>
                         <th>{{ __('Employee') }}</th>
                         <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->format('M Y') }})</small></th>
-                        <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Profit') }}</th>
                         <th>{{ __('All-Time Revenue') }}</th>
-                        <th>{{ __('All-Time Profit') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -97,9 +91,7 @@
                                 </div>
                             </td>
                             <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--color-primary-light);">{{ number_format($stat['monthly_revenue'], 2) }}</td>
-                            <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--green);">{{ number_format($stat['monthly_profit'], 2) }}</td>
                             <td style="font-weight: bold;">{{ number_format($stat['all_time_revenue'], 2) }}</td>
-                            <td style="font-weight: bold; color: var(--green);">{{ number_format($stat['all_time_profit'], 2) }}</td>
                         </tr>
                     @endforeach
                     @if(count($employeeStats) === 0)

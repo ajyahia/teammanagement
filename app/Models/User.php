@@ -26,7 +26,9 @@ use Illuminate\Notifications\Notifiable;
     'instagram',
     'work_start_time',
     'work_end_time',
-    'salary'
+    'salary',
+    'payment_type',
+    'project_rate'
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable

@@ -71,9 +71,24 @@
                     @error('services') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
                 <div class="form-group">
+                    <label for="payment_type">{{ __('Payment Type') }} *</label>
+                    <select name="payment_type" id="payment_type" required onchange="togglePaymentFields()">
+                        <option value="monthly_salary" {{ old('payment_type', $employee->payment_type) === 'monthly_salary' ? 'selected' : '' }}>{{ __('Monthly Salary') }}</option>
+                        <option value="per_project" {{ old('payment_type', $employee->payment_type) === 'per_project' ? 'selected' : '' }}>{{ __('Per Project') }}</option>
+                    </select>
+                    @error('payment_type') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
+                </div>
+
+                <div class="form-group" id="salary_group">
                     <label for="salary">{{ __('Basic Salary') }} *</label>
-                    <input type="number" step="0.01" name="salary" id="salary" placeholder="{{ __('e.g. 5000') }}" value="{{ old('salary', $employee->salary) }}" required>
+                    <input type="number" step="0.01" name="salary" id="salary" placeholder="{{ __('e.g. 5000') }}" value="{{ old('salary', $employee->salary) }}">
                     @error('salary') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
+                </div>
+
+                <div class="form-group" id="project_rate_group" style="display: none;">
+                    <label for="project_rate">{{ __('Rate Per Project') }} *</label>
+                    <input type="number" step="0.01" name="project_rate" id="project_rate" placeholder="{{ __('e.g. 4000') }}" value="{{ old('project_rate', $employee->project_rate) }}">
+                    @error('project_rate') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
 
@@ -85,4 +100,29 @@
             </div>
         </form>
     </div>
+    <script>
+        function togglePaymentFields() {
+            const paymentType = document.getElementById('payment_type').value;
+            const salaryGroup = document.getElementById('salary_group');
+            const projectRateGroup = document.getElementById('project_rate_group');
+            const salaryInput = document.getElementById('salary');
+            const projectRateInput = document.getElementById('project_rate');
+            
+            if (paymentType === 'monthly_salary') {
+                salaryGroup.style.display = 'block';
+                salaryInput.required = true;
+                
+                projectRateGroup.style.display = 'none';
+                projectRateInput.required = false;
+            } else {
+                salaryGroup.style.display = 'none';
+                salaryInput.required = false;
+                
+                projectRateGroup.style.display = 'block';
+                projectRateInput.required = true;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', togglePaymentFields);
+    </script>
 @endsection

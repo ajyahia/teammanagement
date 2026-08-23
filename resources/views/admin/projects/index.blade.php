@@ -29,13 +29,13 @@
             <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Revenue') }}</p>
             <h3 style="margin: 0; color: var(--text-primary); font-family: var(--font-title);">{{ number_format($projects->sum('agreed_price'), 2) }}</h3>
         </div>
-        <div class="card" style="padding: 20px; border-left: 4px solid var(--orange);">
-            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Costs') }}</p>
-            <h3 style="margin: 0; color: var(--text-primary); font-family: var(--font-title);">{{ number_format($projects->sum('cost'), 2) }}</h3>
-        </div>
         <div class="card" style="padding: 20px; border-left: 4px solid var(--green);">
-            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Net Profit') }}</p>
-            <h3 style="margin: 0; color: var(--green); font-family: var(--font-title);">{{ number_format($projects->sum('profit'), 2) }}</h3>
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Paid') }}</p>
+            <h3 style="margin: 0; color: var(--green); font-family: var(--font-title);">{{ number_format($projects->sum('paid_amount'), 2) }}</h3>
+        </div>
+        <div class="card" style="padding: 20px; border-left: 4px solid var(--orange);">
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Due') }}</p>
+            <h3 style="margin: 0; color: var(--orange); font-family: var(--font-title);">{{ number_format($projects->sum('due_amount'), 2) }}</h3>
         </div>
     </div>
 
@@ -49,7 +49,8 @@
                         <th>{{ __('Assigned To') }}</th>
                         <th>{{ __('Status') }}</th>
                         <th>{{ __('Price') }}</th>
-                        <th>{{ __('Profit') }}</th>
+                        <th>{{ __('Paid') }}</th>
+                        <th>{{ __('Due') }}</th>
                         <th style="text-align: center;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -84,7 +85,8 @@
                                 <span class="badge {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</span>
                             </td>
                             <td>{{ number_format($project->agreed_price, 2) }}</td>
-                            <td style="color: var(--green); font-weight: bold;">{{ number_format($project->profit, 2) }}</td>
+                            <td style="color: var(--green); font-weight: bold;">{{ number_format($project->paid_amount, 2) }}</td>
+                            <td style="color: var(--orange); font-weight: bold;">{{ number_format($project->due_amount, 2) }}</td>
                             <td>
                                 <div style="display: flex; justify-content: center; gap: 8px;">
                                     <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn-icon btn-secondary" title="{{ __('Edit Project') }}">
