@@ -66,5 +66,10 @@
                 </tbody>
             </table>
         </div>
+        @if($services->hasPages())
+            <div style="margin-top: 20px;">
+                {{ $services->links() }}
+            </div>
+        @endif
     </div>
 @endsection

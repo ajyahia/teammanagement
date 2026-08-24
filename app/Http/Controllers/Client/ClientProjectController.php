@@ -12,7 +12,7 @@ class ClientProjectController extends Controller
     public function index()
     {
         $clientId = Auth::guard('client')->id();
-        $projects = Project::with(['service', 'payments'])->where('client_id', $clientId)->latest()->get();
+        $projects = Project::with(['service', 'payments'])->where('client_id', $clientId)->latest()->paginate(10);
         
         return view('client.projects.index', compact('projects'));
     }

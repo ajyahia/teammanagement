@@ -60,6 +60,12 @@
         <span>{{ __('Projects') }}</span>
     </a>
 </li>
+<li class="sidebar-item {{ request()->is('admin/expenses*') ? 'active' : '' }}">
+    <a href="/admin/expenses">
+        <i class="ri-money-dollar-circle-line"></i>
+        <span>المصروفات</span>
+    </a>
+</li>
 <li class="sidebar-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
     <a href="/admin/reports">
         <i class="ri-bar-chart-box-fill"></i>

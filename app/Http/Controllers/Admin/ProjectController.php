@@ -13,7 +13,7 @@ class ProjectController extends Controller
 {
     public function index()
     {
-        $projects = Project::with(['client', 'service', 'employees'])->latest()->get();
+        $projects = Project::with(['client', 'service', 'employees'])->latest()->paginate(10);
         return view('admin.projects.index', compact('projects'));
     }
 

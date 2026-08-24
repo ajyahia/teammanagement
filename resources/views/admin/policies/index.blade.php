@@ -74,5 +74,10 @@
                 </tbody>
             </table>
         </div>
+        @if($policies->hasPages())
+            <div style="margin-top: 20px;">
+                {{ $policies->links() }}
+            </div>
+        @endif
     </div>
 @endsection

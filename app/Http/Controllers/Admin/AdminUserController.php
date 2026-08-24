@@ -15,7 +15,7 @@ class AdminUserController extends Controller
      */
     public function index()
     {
-        $employees = User::with('services')->where('role', 'employee')->get();
+        $employees = User::with('services')->where('role', 'employee')->paginate(10);
         return view('admin.employees.index', compact('employees'));
     }
 

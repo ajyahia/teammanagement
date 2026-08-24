@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Expense;
 use Carbon\Carbon;
 
 class ReportController extends Controller
@@ -27,12 +28,14 @@ class ReportController extends Controller
             $monthlyRevenue = 0;
 
             foreach ($allProjects as $project) {
-                // One time projects add their paid amount
+                // One time projects add their paid amount from project_payments
                 if ($project->billing_type === 'one_time') {
-                    $allTimeRevenue += $project->paid_amount;
-                    if ($project->created_at->format('m-Y') === "{$month}-{$year}") {
-                        $monthlyRevenue += $project->paid_amount;
-                    }
+                    $paidPayments = $project->payments()->where('status', 'paid')->get();
+                    $allTimeRevenue += $paidPayments->sum('amount');
+                    
+                    $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
+                        return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
+                    })->sum('amount');
                 } else {
                     // Monthly projects sum their paid cycles
                     $paidCycles = $project->cycles()->where('is_paid', true)->get();
@@ -61,10 +64,12 @@ class ReportController extends Controller
 
             foreach ($allProjects as $project) {
                 if ($project->billing_type === 'one_time') {
-                    $allTimeRevenue += $project->paid_amount;
-                    if ($project->created_at->format('m-Y') === "{$month}-{$year}") {
-                        $monthlyRevenue += $project->paid_amount;
-                    }
+                    $paidPayments = $project->payments()->where('status', 'paid')->get();
+                    $allTimeRevenue += $paidPayments->sum('amount');
+                    
+                    $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
+                        return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
+                    })->sum('amount');
                 } else {
                     $paidCycles = $project->cycles()->where('is_paid', true)->get();
                     $allTimeRevenue += $paidCycles->sum('amount');
@@ -100,16 +105,22 @@ class ReportController extends Controller
         $totalMonthlySalaries = \App\Models\SalaryPayment::where('month', (int)$month)->where('year', (int)$year)->sum('amount');
         $totalAllTimeSalaries = \App\Models\SalaryPayment::sum('amount');
 
-        // 3. Net Profit
-        $monthlyNetProfit = $totalMonthlyRevenue - $totalMonthlySalaries;
-        $allTimeNetProfit = $totalAllTimeRevenue - $totalAllTimeSalaries;
+        // 3. Total Expenses (from Expense)
+        $totalMonthlyExpenses = Expense::whereMonth('expense_date', $month)->whereYear('expense_date', $year)->sum('amount');
+        $totalAllTimeExpenses = Expense::sum('amount');
+
+        // 4. Net Profit (Revenue - Salaries - Expenses)
+        $monthlyNetProfit = $totalMonthlyRevenue - $totalMonthlySalaries - $totalMonthlyExpenses;
+        $allTimeNetProfit = $totalAllTimeRevenue - $totalAllTimeSalaries - $totalAllTimeExpenses;
 
         $financialSummary = [
             'monthly_revenue' => $totalMonthlyRevenue,
             'monthly_salaries' => $totalMonthlySalaries,
+            'monthly_expenses' => $totalMonthlyExpenses,
             'monthly_net_profit' => $monthlyNetProfit,
             'all_time_revenue' => $totalAllTimeRevenue,
             'all_time_salaries' => $totalAllTimeSalaries,
+            'all_time_expenses' => $totalAllTimeExpenses,
             'all_time_net_profit' => $allTimeNetProfit,
         ];
 

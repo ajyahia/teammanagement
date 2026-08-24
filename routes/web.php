@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Admin\ProjectPaymentController as AdminProjectPaymentController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\ExpenseController as AdminExpenseController;
 use App\Http\Controllers\Employee\ProjectController as EmployeeProjectController;
 use App\Http\Controllers\Client\ClientAuthController;
 use App\Http\Controllers\Client\ClientDashboardController;
@@ -110,6 +111,9 @@ Route::middleware('auth')->group(function () {
 
         // Reports & Analytics
         Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+
+        // Expenses
+        Route::resource('expenses', AdminExpenseController::class)->except(['show']);
     });
 
     // Employee Group

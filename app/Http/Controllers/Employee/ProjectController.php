@@ -15,7 +15,7 @@ class ProjectController extends Controller
         $projects = Project::with(['client', 'service'])
             ->where('employee_id', Auth::id())
             ->latest()
-            ->get();
+            ->paginate(10);
             
         return view('employee.projects.index', compact('projects'));
     }

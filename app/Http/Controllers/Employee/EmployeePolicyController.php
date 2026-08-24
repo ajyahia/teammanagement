@@ -13,7 +13,7 @@ class EmployeePolicyController extends Controller
      */
     public function index()
     {
-        $policies = CompanyPolicy::orderBy('sort_order', 'asc')->get();
+        $policies = CompanyPolicy::orderBy('sort_order', 'asc')->paginate(10);
         return view('employee.policies.index', compact('policies'));
     }
 }

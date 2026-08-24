@@ -78,4 +78,9 @@
             </div>
         @endforelse
     </div>
+    @if($projects->hasPages())
+        <div style="margin-top: 20px;">
+            {{ $projects->links() }}
+        </div>
+    @endif
 @endsection

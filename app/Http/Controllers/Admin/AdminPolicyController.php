@@ -13,7 +13,7 @@ class AdminPolicyController extends Controller
      */
     public function index()
     {
-        $policies = CompanyPolicy::orderBy('sort_order', 'asc')->get();
+        $policies = CompanyPolicy::orderBy('sort_order', 'asc')->paginate(10);
         return view('admin.policies.index', compact('policies'));
     }
 

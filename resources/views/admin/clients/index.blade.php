@@ -71,5 +71,10 @@
                 </tbody>
             </table>
         </div>
+        @if($clients->hasPages())
+            <div style="margin-top: 20px;">
+                {{ $clients->links() }}
+            </div>
+        @endif
     </div>
 @endsection

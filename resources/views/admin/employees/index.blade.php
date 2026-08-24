@@ -84,6 +84,12 @@
                 </tbody>
             </table>
         </div>
+        </div>
+        @if($employees->hasPages())
+            <div style="margin-top: 20px;">
+                {{ $employees->links() }}
+            </div>
+        @endif
     </div>
 
     <!-- Custom Confirm Modal -->
