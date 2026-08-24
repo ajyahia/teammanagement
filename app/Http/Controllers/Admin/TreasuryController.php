@@ -22,7 +22,7 @@ class TreasuryController extends Controller
                 'date' => $sp->paid_at ?? $sp->created_at,
                 'type' => 'salary',
                 'amount' => $sp->amount,
-                'description' => 'Salary Payment: ' . ($sp->user ? $sp->user->name : 'Unknown') . ($sp->notes ? ' - ' . $sp->notes : ''),
+                'description' => __('Salary Payment') . ': ' . ($sp->user ? $sp->user->name : __('Unknown')) . ($sp->notes ? ' - ' . $sp->notes : ''),
                 'direction' => 'out'
             ];
         });
@@ -33,7 +33,7 @@ class TreasuryController extends Controller
                 'date' => $e->date ?? $e->created_at,
                 'type' => 'expense',
                 'amount' => $e->amount,
-                'description' => 'Expense: ' . $e->name,
+                'description' => __('Expense') . ': ' . $e->name,
                 'direction' => 'out'
             ];
         });
@@ -44,7 +44,7 @@ class TreasuryController extends Controller
                 'date' => $pp->paid_at ?? $pp->due_date,
                 'type' => 'project_payment',
                 'amount' => $pp->amount,
-                'description' => 'Project Installment (' . ($pp->project && $pp->project->service ? $pp->project->service->name : '') . ' - ' . ($pp->project && $pp->project->client ? $pp->project->client->name : '') . '): ' . $pp->title,
+                'description' => __('Project Installment') . ' (' . ($pp->project && $pp->project->service ? $pp->project->service->name : '') . ' - ' . ($pp->project && $pp->project->client ? $pp->project->client->name : '') . '): ' . $pp->title,
                 'direction' => 'in'
             ];
         });
@@ -55,7 +55,7 @@ class TreasuryController extends Controller
                 'date' => $pc->paid_at ?? $pc->billing_date,
                 'type' => 'project_cycle',
                 'amount' => $pc->amount,
-                'description' => 'Subscription Payment (' . ($pc->project && $pc->project->service ? $pc->project->service->name : '') . ' - ' . ($pc->project && $pc->project->client ? $pc->project->client->name : '') . '): ' . $pc->billing_date->format('M Y'),
+                'description' => __('Subscription Payment') . ' (' . ($pc->project && $pc->project->service ? $pc->project->service->name : '') . ' - ' . ($pc->project && $pc->project->client ? $pc->project->client->name : '') . '): ' . $pc->billing_date->format('M Y'),
                 'direction' => 'in'
             ];
         });

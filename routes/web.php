@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/salaries', [AdminSalaryController::class, 'index'])->name('salaries.index');
         Route::post('/salaries', [AdminSalaryController::class, 'store'])->name('salaries.store');
         Route::get('/salaries/{user}/details', [AdminSalaryController::class, 'details'])->name('salaries.details');
+        Route::put('/salaries/adjustments/{id}', [AdminSalaryController::class, 'update'])->name('salaries.adjustments.update');
         Route::delete('/salaries/adjustments/{id}', [AdminSalaryController::class, 'destroy'])->name('salaries.adjustments.destroy');
         Route::post('/salaries/{user}/pay', [AdminSalaryController::class, 'pay'])->name('salaries.pay');
         Route::delete('/salaries/{user}/unpay', [AdminSalaryController::class, 'unpay'])->name('salaries.unpay');

@@ -93,6 +93,30 @@ class AdminSalaryController extends Controller
     }
 
     /**
+     * Update an existing adjustment record.
+     */
+    public function update(Request $request, $id)
+    {
+        $adjustment = SalaryAdjustment::findOrFail($id);
+        
+        $validatedData = $request->validate([
+            'type' => 'required|string|in:bonus,deduction,advance',
+            'amount' => 'required|numeric|min:0',
+            'created_at' => 'required|date',
+            'notes' => 'nullable|string',
+        ]);
+
+        $adjustment->update([
+            'type' => $validatedData['type'],
+            'amount' => $validatedData['amount'],
+            'notes' => $validatedData['notes'] ?? null,
+            'created_at' => \Carbon\Carbon::parse($validatedData['created_at']),
+        ]);
+
+        return redirect()->back()->with('success', __('Adjustment updated successfully.'));
+    }
+
+    /**
      * Delete a specific adjustment record.
      */
     public function destroy($id)

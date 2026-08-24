@@ -28,8 +28,8 @@ class ReportController extends Controller
             $monthlyRevenue = 0;
 
             foreach ($allProjects as $project) {
-                // One time projects add their paid amount from project_payments
-                if ($project->billing_type === 'one_time') {
+                // One time & per page projects add their paid amount from project_payments
+                if (in_array($project->billing_type, ['one_time', 'per_page'])) {
                     $paidPayments = $project->payments()->where('status', 'paid')->get();
                     $allTimeRevenue += $paidPayments->sum('amount');
                     
@@ -63,7 +63,7 @@ class ReportController extends Controller
             $monthlyRevenue = 0;
 
             foreach ($allProjects as $project) {
-                if ($project->billing_type === 'one_time') {
+                if (in_array($project->billing_type, ['one_time', 'per_page'])) {
                     $paidPayments = $project->payments()->where('status', 'paid')->get();
                     $allTimeRevenue += $paidPayments->sum('amount');
                     

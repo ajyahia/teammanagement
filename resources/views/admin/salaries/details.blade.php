@@ -331,11 +331,14 @@
                                         <span style="color: var(--text-secondary); font-size: 0.85rem;">-</span>
                                     @endif
                                 </td>
-                                <td style="text-align: center;">
+                                <td style="text-align: center; white-space: nowrap;">
+                                    <button type="button" class="btn btn-secondary btn-icon" onclick="openEditAdjModal({{ $adj->id }}, '{{ $adj->type }}', {{ $adj->amount }}, '{{ $adj->created_at->format('Y-m-d') }}', '{{ addslashes($adj->notes) }}')" title="{{ __('Edit') }}" style="margin-inline-end: 4px;">
+                                        <i class="ri-edit-2-line"></i>
+                                    </button>
                                     <form id="delete-adj-form-{{ $adj->id }}" method="POST" action="/admin/salaries/adjustments/{{ $adj->id }}" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-danger btn-icon" onclick="showGlobalConfirmPopup('delete-adj-form-{{ $adj->id }}', '{{ __('Are you sure you want to delete this adjustment?') }}')">
+                                        <button type="button" class="btn btn-danger btn-icon" onclick="showGlobalConfirmPopup('delete-adj-form-{{ $adj->id }}', '{{ __('Are you sure you want to delete this adjustment?') }}')" title="{{ __('Delete') }}">
                                             <i class="ri-delete-bin-fill"></i>
                                         </button>
                                     </form>
@@ -443,6 +446,56 @@
         </div>
     </div>
 
+    <!-- Edit Adjustment Modal -->
+    <div class="reason-modal-overlay" id="editAdjModalOverlay" onclick="closeEditAdjModal(event)">
+        <div class="reason-modal" onclick="event.stopPropagation()">
+            <div class="reason-modal-header">
+                <h4>
+                    <i class="ri-edit-2-line"></i>
+                    <span>{{ __('Edit Adjustment') }}</span>
+                </h4>
+                <button class="reason-modal-close" type="button" onclick="closeEditAdjModal()">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <div class="reason-modal-body" style="padding: 20px;">
+                <form id="editAdjForm" method="POST" action="" style="display: flex; flex-direction: column; gap: 16px;">
+                    @csrf
+                    @method('PUT')
+                    
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="edit_type" style="font-weight: 600; font-size: 0.85rem;">{{ __('Type') }}</label>
+                        <select name="type" id="edit_type" class="adj-form-select" required>
+                            <option value="bonus">{{ __('Bonus') }} (+)</option>
+                            <option value="deduction">{{ __('Deduction') }} (-)</option>
+                            <option value="advance">{{ __('Advance/Loan (سلفة)') }} (-)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="edit_created_at" style="font-weight: 600; font-size: 0.85rem;">{{ __('Date') }}</label>
+                        <input type="date" name="created_at" id="edit_created_at" required style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-body, var(--bg-main)); color: var(--text-primary);">
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="edit_amount" style="font-weight: 600; font-size: 0.85rem;">{{ __('Amount') }}</label>
+                        <input type="number" step="0.01" min="0.01" name="amount" id="edit_amount" required style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-body, var(--bg-main)); color: var(--text-primary);">
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="edit_notes" style="font-weight: 600; font-size: 0.85rem;">{{ __('Reason / Notes') }}</label>
+                        <textarea name="notes" id="edit_notes" rows="3" style="width: 100%; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-body, var(--bg-main)); color: var(--text-primary); resize: none; font-family: var(--font-body);"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="padding: 12px; font-weight: 600; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px;">
+                        <i class="ri-save-line" style="font-size: 1.2rem;"></i>
+                        <span>{{ __('Update') }}</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showReasonModal(reason) {
             document.getElementById('reasonModalBody').textContent = reason;
@@ -456,10 +509,30 @@
             document.body.style.overflow = '';
         }
 
+        function openEditAdjModal(id, type, amount, date, notes) {
+            let form = document.getElementById('editAdjForm');
+            form.action = '/admin/salaries/adjustments/' + id;
+            
+            document.getElementById('edit_type').value = type;
+            document.getElementById('edit_amount').value = amount;
+            document.getElementById('edit_created_at').value = date;
+            document.getElementById('edit_notes').value = notes;
+            
+            document.getElementById('editAdjModalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditAdjModal(e) {
+            if (e && e.target !== document.getElementById('editAdjModalOverlay')) return;
+            document.getElementById('editAdjModalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
         // Close on ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeReasonModal();
+                closeEditAdjModal();
             }
         });
     </script>
