@@ -96,9 +96,14 @@
                         @else
                             <span class="badge badge-secondary" style="margin-left: 10px; font-size: 0.75rem;">{{ __('One Time') }}</span>
                         @endif
-                        <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn-icon btn-secondary" style="margin-inline-start: 10px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: var(--radius-sm); text-decoration: none;" title="{{ __('Edit Project') }}">
-                            <i class="ri-edit-2-line" style="font-size: 1rem;"></i>
-                        </a>
+                        <div style="margin-inline-start: 10px; display: inline-flex;">
+                            <a href="{{ route('admin.projects.edit', $project->id) }}#payments" class="btn-icon btn-success" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); margin-inline-end: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: var(--radius-sm); text-decoration: none;" title="{{ __('Manage Payments / Installments') }}">
+                                <i class="ri-money-dollar-circle-fill"></i>
+                            </a>
+                            <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn-icon btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: var(--radius-sm); text-decoration: none;" title="{{ __('Edit Project') }}">
+                                <i class="ri-edit-2-line" style="font-size: 1rem;"></i>
+                            </a>
+                        </div>
                     </h4>
                     <span style="font-size: 0.85rem; color: var(--text-secondary);">
                         {{ __('Status:') }} 

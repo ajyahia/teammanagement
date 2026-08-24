@@ -60,7 +60,7 @@ class ProjectController extends Controller
 
         $project = Project::create($data);
         $project->employees()->sync($employeeIds);
-        return redirect()->route('admin.projects.index')->with('success', 'Project created successfully.');
+        return redirect()->route('admin.projects.index')->with('success', __('Project created successfully.'));
     }
 
     public function edit(Project $project)
@@ -106,12 +106,12 @@ class ProjectController extends Controller
 
         $project->update($data);
         $project->employees()->sync($employeeIds);
-        return redirect()->route('admin.projects.index')->with('success', 'Project updated successfully.');
+        return redirect()->route('admin.projects.index')->with('success', __('Project updated successfully.'));
     }
 
     public function destroy(Project $project)
     {
         $project->delete();
-        return redirect()->route('admin.projects.index')->with('success', 'Project deleted successfully.');
+        return redirect()->route('admin.projects.index')->with('success', __('Project deleted successfully.'));
     }
 }

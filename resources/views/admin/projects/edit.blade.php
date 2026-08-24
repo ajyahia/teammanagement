@@ -132,7 +132,7 @@
     </div>
 
     @if(in_array($project->billing_type, ['monthly', 'yearly']))
-    <div class="card" style="max-width: 800px; margin: 24px auto 0;">
+    <div id="payments" class="card" style="max-width: 800px; margin: 24px auto 0;">
         <h3 style="font-family: var(--font-title); margin-top: 0; margin-bottom: 24px; font-weight: 600;">
             <i class="ri-calendar-event-line" style="color: var(--color-primary); margin-right: 8px;"></i>
             {{ __('Subscription Billing Cycles') }}
@@ -215,7 +215,7 @@
     </div>
     @else
     <!-- Project Installments for One-time/Per-page projects -->
-    <div class="card" style="max-width: 800px; margin: 24px auto 0;">
+    <div id="payments" class="card" style="max-width: 800px; margin: 24px auto 0;">
         <h3 style="font-family: var(--font-title); margin-top: 0; margin-bottom: 24px; font-weight: 600;">
             <i class="ri-bank-card-line" style="color: var(--color-primary); margin-right: 8px;"></i>
             {{ __('Project Installments / Payments') }}

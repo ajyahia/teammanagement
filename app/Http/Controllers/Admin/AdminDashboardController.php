@@ -50,7 +50,7 @@ class AdminDashboardController extends Controller
         $treasuryBalance = $budget + $totalProjectIncomes - $totalSalaryPayments - $totalExpenses;
 
         $monthlyDues = $projects->whereIn('billing_type', ['monthly', 'yearly'])->sum('due_amount');
-        $regularDues = $projects->where('billing_type', 'per_project')->sum('due_amount');
+        $regularDues = $projects->whereIn('billing_type', ['one_time', 'per_page'])->sum('due_amount');
 
         $financials = [
             'treasury' => $treasuryBalance,

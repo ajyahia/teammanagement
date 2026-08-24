@@ -123,6 +123,9 @@
                             <td style="color: var(--orange); font-weight: bold;">{{ number_format($project->due_amount, 2) }}</td>
                             <td>
                                 <div style="display: flex; justify-content: center; gap: 8px;">
+                                    <a href="{{ route('admin.projects.edit', $project->id) }}#payments" class="btn-icon btn-success" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);" title="{{ __('Manage Payments / Installments') }}">
+                                        <i class="ri-money-dollar-circle-fill"></i>
+                                    </a>
                                     <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn-icon btn-secondary" title="{{ __('Edit Project') }}">
                                         <i class="ri-edit-2-line"></i>
                                     </a>

@@ -20,7 +20,7 @@ class ProjectCycleController extends Controller
             'is_paid' => false,
         ]);
 
-        return redirect()->back()->with('success', 'Billing cycle added successfully.');
+        return redirect()->back()->with('success', __('Billing cycle added successfully.'));
     }
 
     public function togglePaid(\App\Models\ProjectCycle $cycle)
@@ -29,13 +29,13 @@ class ProjectCycleController extends Controller
         $cycle->paid_at = $cycle->is_paid ? now() : null;
         $cycle->save();
 
-        return redirect()->back()->with('success', 'Cycle payment status updated.');
+        return redirect()->back()->with('success', __('Cycle payment status updated.'));
     }
 
     public function destroy(\App\Models\ProjectCycle $cycle)
     {
         $cycle->delete();
-        return redirect()->back()->with('success', 'Cycle deleted successfully.');
+        return redirect()->back()->with('success', __('Cycle deleted successfully.'));
     }
 
     public function generateAll()

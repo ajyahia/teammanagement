@@ -27,7 +27,7 @@ class ProjectPaymentController extends Controller
 
         $project->payments()->create($data);
 
-        return back()->with('success', 'Payment/Installment added successfully.');
+        return back()->with('success', __('Payment/Installment added successfully.'));
     }
 
     public function update(Request $request, ProjectPayment $payment)
@@ -48,12 +48,12 @@ class ProjectPaymentController extends Controller
 
         $payment->update($data);
 
-        return back()->with('success', 'Payment/Installment updated successfully.');
+        return back()->with('success', __('Payment/Installment updated successfully.'));
     }
 
     public function destroy(ProjectPayment $payment)
     {
         $payment->delete();
-        return back()->with('success', 'Payment/Installment deleted successfully.');
+        return back()->with('success', __('Payment/Installment deleted successfully.'));
     }
 }

@@ -554,5 +554,14 @@
     "Owed by monthly\/yearly clients": "المبالغ المتبقية على عملاء الاشتراكات",
     "Project Dues": "مستحقات المشاريع",
     "Owed by regular project clients": "المبالغ المتبقية على عملاء المشاريع العادية",
-    "HR & Attendance": "الموارد البشرية والحضور"
+    "HR & Attendance": "الموارد البشرية والحضور",
+    "Billing cycle added successfully.": "تم إضافة دورة الفوترة بنجاح.",
+    "Cycle payment status updated.": "تم تحديث حالة دفع دورة الفوترة.",
+    "Cycle deleted successfully.": "تم حذف الدورة بنجاح.",
+    "Payment/Installment added successfully.": "تم إضافة الدفعة/القسط بنجاح.",
+    "Payment/Installment updated successfully.": "تم تحديث الدفعة/القسط بنجاح.",
+    "Payment/Installment deleted successfully.": "تم حذف الدفعة/القسط بنجاح.",
+    "Project created successfully.": "تم إنشاء المشروع بنجاح.",
+    "Project updated successfully.": "تم تحديث المشروع بنجاح.",
+    "Project deleted successfully.": "تم حذف المشروع بنجاح."
 }
