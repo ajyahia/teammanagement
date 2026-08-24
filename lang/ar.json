@@ -533,5 +533,9 @@
     "Expense deleted successfully": "تم حذف المصروف بنجاح",
     "auth.failed": "بيانات الدخول غير صحيحة",
     "Total Billed:": "إجمالي المفوتر:",
-    "Rate:": "السعر الأساسي:"
+    "Rate:": "السعر الأساسي:",
+    "Months": "أشهر",
+    "Generate Monthly Bills": "إصدار فواتير الشهر",
+    "Generate billing cycles for all active subscriptions for the current month": "إنشاء دورات فوترة لجميع الاشتراكات النشطة للشهر الحالي",
+    "new billing cycles generated.": "دورات فوترة جديدة تم إنشاؤها."
 }

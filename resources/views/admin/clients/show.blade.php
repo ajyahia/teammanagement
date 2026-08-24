@@ -107,6 +107,9 @@
                         @endphp
                         <strong style="color: {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</strong>
                         | {{ __('Total Billed:') }} <strong>{{ number_format($project->total_revenue, 2) }}</strong>
+                        @if(in_array($project->billing_type, ['monthly', 'yearly']))
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">({{ $project->cycles->count() }} {{ __('Months') }})</span>
+                        @endif
                         | <span style="color: var(--green);">{{ __('Paid:') }} <strong>{{ number_format($project->total_paid, 2) }}</strong></span>
                         | <span style="color: var(--orange);">{{ __('Due:') }} <strong>{{ number_format($project->due_amount, 2) }}</strong></span>
                         <br><br>

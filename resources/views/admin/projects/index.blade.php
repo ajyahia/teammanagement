@@ -15,6 +15,13 @@
                 <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">{{ __('Track services, assign employees, and monitor profits') }}</p>
             </div>
             <div>
+                <form action="{{ route('admin.projects.cycles.generate_all') }}" method="POST" style="display: inline-block; margin-inline-end: 10px;">
+                    @csrf
+                    <button type="submit" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;" title="{{ __('Generate billing cycles for all active subscriptions for the current month') }}">
+                        <i class="ri-refresh-line"></i>
+                        <span>{{ __('Generate Monthly Bills') }}</span>
+                    </button>
+                </form>
                 <a href="{{ route('admin.projects.create') }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
                     <i class="ri-add-line"></i>
                     <span>{{ __('Create Project') }}</span>
@@ -96,7 +103,10 @@
                             <td>
                                 {{ number_format($project->total_revenue, 2) }}
                                 @if(in_array($project->billing_type, ['monthly', 'yearly']))
-                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Rate:') }} {{ number_format($project->agreed_price, 2) }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                        {{ __('Rate:') }} {{ number_format($project->agreed_price, 2) }} 
+                                        ({{ $project->cycles->count() }} {{ __('Months') }})
+                                    </div>
                                 @endif
                             </td>
                             <td style="color: var(--green); font-weight: bold;">{{ number_format($project->total_paid, 2) }}</td>

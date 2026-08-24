@@ -37,4 +37,40 @@ class ProjectCycleController extends Controller
         $cycle->delete();
         return redirect()->back()->with('success', 'Cycle deleted successfully.');
     }
+
+    public function generateAll()
+    {
+        $projects = \App\Models\Project::whereIn('billing_type', ['monthly', 'yearly'])
+            ->where('subscription_status', 'active')
+            ->get();
+
+        $generatedCount = 0;
+        $now = now();
+
+        foreach ($projects as $project) {
+            $exists = false;
+            
+            if ($project->billing_type === 'monthly') {
+                $exists = $project->cycles()
+                    ->whereMonth('billing_date', $now->month)
+                    ->whereYear('billing_date', $now->year)
+                    ->exists();
+            } else if ($project->billing_type === 'yearly') {
+                $exists = $project->cycles()
+                    ->whereYear('billing_date', $now->year)
+                    ->exists();
+            }
+
+            if (!$exists) {
+                $project->cycles()->create([
+                    'billing_date' => $now->copy()->startOfMonth(),
+                    'amount' => $project->agreed_price,
+                    'is_paid' => false,
+                ]);
+                $generatedCount++;
+            }
+        }
+
+        return redirect()->back()->with('success', $generatedCount . ' ' . __('new billing cycles generated.'));
+    }
 }

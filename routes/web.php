@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/payments/{payment}', [AdminProjectPaymentController::class, 'destroy'])->name('projects.payments.destroy');
 
         // Project Cycles
+        Route::post('/projects/cycles/generate', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'generateAll'])->name('projects.cycles.generate_all');
         Route::post('/projects/{project}/cycles', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'store'])->name('projects.cycles.store');
         Route::patch('/cycles/{cycle}/toggle-paid', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'togglePaid'])->name('projects.cycles.toggle_paid');
         Route::delete('/cycles/{cycle}', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'destroy'])->name('projects.cycles.destroy');
