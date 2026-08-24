@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         
+        // Treasury
+        Route::get('/treasury', [\App\Http\Controllers\Admin\TreasuryController::class, 'index'])->name('treasury.index');
+
         // Employee Management (CRUD)
         Route::resource('employees', AdminUserController::class)->except(['show']);
         

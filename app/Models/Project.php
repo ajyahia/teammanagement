@@ -64,7 +64,8 @@ class Project extends Model
         if (in_array($this->billing_type, ['monthly', 'yearly'])) {
             return $this->cycles->where('is_paid', true)->sum('amount');
         }
-        return $this->paid_amount;
+        // Incorporate both legacy paid_amount and new project payments
+        return $this->payments->where('status', 'paid')->sum('amount') + $this->paid_amount;
     }
 
     public function getDueAmountAttribute()

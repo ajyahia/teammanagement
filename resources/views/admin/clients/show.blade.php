@@ -41,6 +41,11 @@
                         <i class="ri-key-fill"></i> {{ __('Set Portal Password') }}
                     </button>
                 </div>
+                <div style="margin-top: 10px;">
+                    <a href="{{ route('admin.clients.edit', $client->id) }}" class="btn btn-primary" style="width: 100%; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                        <i class="ri-edit-2-fill"></i> {{ __('Edit Client Details') }}
+                    </a>
+                </div>
             </div>
         </div>
 

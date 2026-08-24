@@ -56,8 +56,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">{{ __('Amount Paid (By Client)') }} <span style="color: red;">*</span></label>
-                    <input type="number" step="0.1" name="paid_amount" class="form-control" required value="{{ old('paid_amount', $project->paid_amount) }}">
+                    <label class="form-label">{{ __('Amount Paid (Legacy)') }}</label>
+                    <input type="number" step="0.1" name="paid_amount" class="form-control" readonly value="{{ old('paid_amount', $project->paid_amount) }}">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 4px;">{{ __('Legacy payments. New payments should be added as installments below.') }}</small>
                 </div>
             </div>
 
@@ -209,6 +210,113 @@
         @else
             <div style="text-align: center; padding: 30px; color: var(--text-secondary); background: var(--bg-hover); border-radius: var(--radius-md);">
                 {{ __('No billing cycles added yet.') }}
+            </div>
+        @endif
+    </div>
+    @else
+    <!-- Project Installments for One-time/Per-page projects -->
+    <div class="card" style="max-width: 800px; margin: 24px auto 0;">
+        <h3 style="font-family: var(--font-title); margin-top: 0; margin-bottom: 24px; font-weight: 600;">
+            <i class="ri-bank-card-line" style="color: var(--color-primary); margin-right: 8px;"></i>
+            {{ __('Project Installments / Payments') }}
+        </h3>
+
+        <form action="{{ route('admin.projects.payments.store', $project->id) }}" method="POST" style="display: flex; gap: 15px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap;">
+            @csrf
+            <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                <label class="form-label">{{ __('Title (e.g. First Installment)') }} <span style="color: red;">*</span></label>
+                <input type="text" name="title" class="form-control" required placeholder="{{ __('Deposit, Installment 1, etc.') }}">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 100px; margin-bottom: 0;">
+                <label class="form-label">{{ __('Amount') }} <span style="color: red;">*</span></label>
+                <input type="number" step="0.01" name="amount" class="form-control" required>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                <label class="form-label">{{ __('Date') }} <span style="color: red;">*</span></label>
+                <input type="date" name="due_date" class="form-control" required value="{{ date('Y-m-d') }}">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+                <label class="form-label">{{ __('Status') }} <span style="color: red;">*</span></label>
+                <select name="status" class="form-control" required>
+                    <option value="paid">{{ __('Paid') }}</option>
+                    <option value="pending">{{ __('Pending') }}</option>
+                    <option value="overdue">{{ __('Overdue') }}</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="height: 48px;">
+                <i class="ri-add-line"></i> {{ __('Add') }}
+            </button>
+        </form>
+
+        @if($project->payments->count() > 0)
+            <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <table class="data-table" style="margin: 0; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 12px 16px;">{{ __('Title') }}</th>
+                            <th style="padding: 12px 16px;">{{ __('Amount') }}</th>
+                            <th style="padding: 12px 16px;">{{ __('Date') }}</th>
+                            <th style="padding: 12px 16px;">{{ __('Status') }}</th>
+                            <th style="padding: 12px 16px; text-align: center; width: 100px;">{{ __('Action') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($project->payments()->orderBy('due_date', 'desc')->get() as $payment)
+                            <tr>
+                                <td style="padding: 12px 16px; font-weight: 600;">
+                                    {{ $payment->title }}
+                                </td>
+                                <td style="padding: 12px 16px; font-weight: 600; color: var(--color-primary-light);">
+                                    {{ number_format($payment->amount, 2) }}
+                                </td>
+                                <td style="padding: 12px 16px; font-size: 0.95rem; color: var(--text-secondary);">
+                                    {{ $payment->due_date->format('Y-m-d') }}
+                                </td>
+                                <td style="padding: 12px 16px;">
+                                    @if($payment->status === 'paid')
+                                        <span class="badge" style="background: rgba(34,197,94,0.1); color: #22c55e;">
+                                            <i class="ri-check-line"></i> {{ __('Paid on') }} {{ $payment->paid_at ? $payment->paid_at->format('Y-m-d') : '' }}
+                                        </span>
+                                    @elseif($payment->status === 'overdue')
+                                        <span class="badge" style="background: rgba(239,68,68,0.1); color: #ef4444;">
+                                            <i class="ri-alarm-warning-line"></i> {{ __('Overdue') }}
+                                        </span>
+                                    @else
+                                        <span class="badge" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
+                                            <i class="ri-time-line"></i> {{ __('Pending') }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td style="padding: 12px 16px; text-align: center; display: flex; gap: 8px; justify-content: center;">
+                                    <!-- Toggle Paid Status Form -->
+                                    <form action="{{ route('admin.projects.payments.update', $payment->id) }}" method="POST" style="margin:0;">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="title" value="{{ $payment->title }}">
+                                        <input type="hidden" name="amount" value="{{ $payment->amount }}">
+                                        <input type="hidden" name="due_date" value="{{ $payment->due_date->format('Y-m-d') }}">
+                                        <input type="hidden" name="status" value="{{ $payment->status === 'paid' ? 'pending' : 'paid' }}">
+                                        <button class="btn btn-icon {{ $payment->status === 'paid' ? 'btn-secondary' : 'btn-success' }}" title="{{ $payment->status === 'paid' ? __('Mark as Pending') : __('Mark as Paid') }}">
+                                            <i class="ri-money-dollar-circle-line"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    <form id="delete-payment-{{ $payment->id }}" action="{{ route('admin.projects.payments.destroy', $payment->id) }}" method="POST" style="margin:0;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-danger btn-icon" title="{{ __('Delete Installment') }}" onclick="showGlobalConfirmPopup('delete-payment-{{ $payment->id }}', '{{ __('Are you sure you want to delete this installment?') }}')">
+                                            <i class="ri-delete-bin-fill"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div style="text-align: center; padding: 30px; color: var(--text-secondary); background: var(--bg-hover); border-radius: var(--radius-md);">
+                {{ __('No installments/payments added yet.') }}
             </div>
         @endif
     </div>

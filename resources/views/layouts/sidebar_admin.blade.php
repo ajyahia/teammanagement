@@ -22,6 +22,13 @@
         <span>{{ __('Monthly Summary') }}</span>
     </a>
 </li>
+
+<li class="sidebar-item {{ request()->routeIs('admin.treasury.*') ? 'active' : '' }}">
+    <a href="{{ route('admin.treasury.index') }}">
+        <i class="ri-safe-line"></i>
+        <span>{{ __('Treasury (الخزنة)') }}</span>
+    </a>
+</li>
 <li class="sidebar-item {{ request()->is('admin/salaries*') ? 'active' : '' }}">
     <a href="/admin/salaries">
         <i class="ri-money-dollar-circle-fill"></i>

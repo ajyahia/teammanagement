@@ -68,8 +68,18 @@
                                 <strong>{{ $project->service->name }}</strong>
                                 @if($project->billing_type === 'monthly')
                                     <span class="badge badge-vacation" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 5px;">{{ __('Monthly Sub') }}</span>
+                                    @if($project->subscription_status === 'active')
+                                        <span class="badge badge-present" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 2px;">{{ __('Active') }}</span>
+                                    @else
+                                        <span class="badge badge-absent" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 2px;">{{ __('Stopped') }}</span>
+                                    @endif
                                 @elseif($project->billing_type === 'yearly')
                                     <span class="badge badge-vacation" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 5px;">{{ __('Annual Subscription') }}</span>
+                                    @if($project->subscription_status === 'active')
+                                        <span class="badge badge-present" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 2px;">{{ __('Active') }}</span>
+                                    @else
+                                        <span class="badge badge-absent" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 2px;">{{ __('Stopped') }}</span>
+                                    @endif
                                 @elseif($project->billing_type === 'per_page')
                                     <span class="badge badge-excused" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 5px;">{{ __('Per Page (Books)') }}</span>
                                 @else

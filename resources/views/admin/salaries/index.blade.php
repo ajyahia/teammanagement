@@ -59,6 +59,26 @@
         </div>
     </div>
 
+    @php
+        $totalPaid = collect($reports)->where('is_paid', true)->sum('net_salary');
+        $totalUnpaid = collect($reports)->where('is_paid', false)->sum('net_salary');
+    @endphp
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <div class="card" style="padding: 20px; border-left: 4px solid var(--color-primary);">
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Salaries') }}</p>
+            <h3 style="margin: 0; color: var(--text-primary); font-family: var(--font-title);">{{ number_format($totalPaid + $totalUnpaid, 0) }}</h3>
+        </div>
+        <div class="card" style="padding: 20px; border-left: 4px solid var(--green);">
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Paid') }}</p>
+            <h3 style="margin: 0; color: var(--green); font-family: var(--font-title);">{{ number_format($totalPaid, 0) }}</h3>
+        </div>
+        <div class="card" style="padding: 20px; border-left: 4px solid var(--red);">
+            <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Unpaid (Due)') }}</p>
+            <h3 style="margin: 0; color: var(--red); font-family: var(--font-title);">{{ number_format($totalUnpaid, 0) }}</h3>
+        </div>
+    </div>
+
     <div class="table-responsive">
         <div class="salary-cards-list">
         @forelse($reports as $r)
