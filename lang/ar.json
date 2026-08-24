@@ -532,5 +532,6 @@
     "Expense updated successfully": "تم تحديث المصروف بنجاح",
     "Expense deleted successfully": "تم حذف المصروف بنجاح",
     "auth.failed": "بيانات الدخول غير صحيحة",
-    "Total Billed:": "إجمالي المفوتر:"
+    "Total Billed:": "إجمالي المفوتر:",
+    "Rate:": "السعر الأساسي:"
 }

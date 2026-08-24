@@ -48,7 +48,7 @@
                         <th>{{ __('Client') }}</th>
                         <th>{{ __('Assigned To') }}</th>
                         <th>{{ __('Status') }}</th>
-                        <th>{{ __('Price') }}</th>
+                        <th>{{ __('Total Billed') }}</th>
                         <th>{{ __('Paid') }}</th>
                         <th>{{ __('Due') }}</th>
                         <th style="text-align: center;">{{ __('Actions') }}</th>
@@ -59,6 +59,15 @@
                         <tr>
                             <td>
                                 <strong>{{ $project->service->name }}</strong>
+                                @if($project->billing_type === 'monthly')
+                                    <span class="badge badge-vacation" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 5px;">{{ __('Monthly Sub') }}</span>
+                                @elseif($project->billing_type === 'yearly')
+                                    <span class="badge badge-vacation" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 5px;">{{ __('Annual Subscription') }}</span>
+                                @elseif($project->billing_type === 'per_page')
+                                    <span class="badge badge-excused" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 5px;">{{ __('Per Page (Books)') }}</span>
+                                @else
+                                    <span class="badge badge-secondary" style="font-size: 0.65rem; padding: 2px 5px; margin-inline-start: 5px;">{{ __('One Time Payment') }}</span>
+                                @endif
                                 <div style="font-size: 0.8rem; color: var(--text-secondary);">#{{ $project->id }}</div>
                             </td>
                             <td>{{ $project->client->name }}</td>
@@ -84,7 +93,12 @@
                                 @endphp
                                 <span class="badge {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</span>
                             </td>
-                            <td>{{ number_format($project->total_revenue, 2) }}</td>
+                            <td>
+                                {{ number_format($project->total_revenue, 2) }}
+                                @if(in_array($project->billing_type, ['monthly', 'yearly']))
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Rate:') }} {{ number_format($project->agreed_price, 2) }}</div>
+                                @endif
+                            </td>
                             <td style="color: var(--green); font-weight: bold;">{{ number_format($project->total_paid, 2) }}</td>
                             <td style="color: var(--orange); font-weight: bold;">{{ number_format($project->due_amount, 2) }}</td>
                             <td>
