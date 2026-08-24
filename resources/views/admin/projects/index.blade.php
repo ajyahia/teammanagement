@@ -27,11 +27,11 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
         <div class="card" style="padding: 20px; border-left: 4px solid var(--color-primary);">
             <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Revenue') }}</p>
-            <h3 style="margin: 0; color: var(--text-primary); font-family: var(--font-title);">{{ number_format($projects->sum('agreed_price'), 2) }}</h3>
+            <h3 style="margin: 0; color: var(--text-primary); font-family: var(--font-title);">{{ number_format($projects->sum('total_revenue'), 2) }}</h3>
         </div>
         <div class="card" style="padding: 20px; border-left: 4px solid var(--green);">
             <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Paid') }}</p>
-            <h3 style="margin: 0; color: var(--green); font-family: var(--font-title);">{{ number_format($projects->sum('paid_amount'), 2) }}</h3>
+            <h3 style="margin: 0; color: var(--green); font-family: var(--font-title);">{{ number_format($projects->sum('total_paid'), 2) }}</h3>
         </div>
         <div class="card" style="padding: 20px; border-left: 4px solid var(--orange);">
             <p style="color: var(--text-secondary); margin: 0 0 5px; font-size: 0.9rem;">{{ __('Total Due') }}</p>
@@ -84,8 +84,8 @@
                                 @endphp
                                 <span class="badge {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</span>
                             </td>
-                            <td>{{ number_format($project->agreed_price, 2) }}</td>
-                            <td style="color: var(--green); font-weight: bold;">{{ number_format($project->paid_amount, 2) }}</td>
+                            <td>{{ number_format($project->total_revenue, 2) }}</td>
+                            <td style="color: var(--green); font-weight: bold;">{{ number_format($project->total_paid, 2) }}</td>
                             <td style="color: var(--orange); font-weight: bold;">{{ number_format($project->due_amount, 2) }}</td>
                             <td>
                                 <div style="display: flex; justify-content: center; gap: 8px;">

@@ -38,8 +38,8 @@ class ClientController extends Controller
         $client->load(['projects.service', 'projects.payments', 'projects.employees']);
         
         $totalProjects = $client->projects->count();
-        $totalRevenue = $client->projects->sum('agreed_price');
-        $totalPaid = $client->projects->sum('paid_amount');
+        $totalRevenue = $client->projects->sum('total_revenue');
+        $totalPaid = $client->projects->sum('total_paid');
         $totalDue = $client->projects->sum('due_amount');
         
         return view('admin.clients.show', compact('client', 'totalProjects', 'totalRevenue', 'totalPaid', 'totalDue'));

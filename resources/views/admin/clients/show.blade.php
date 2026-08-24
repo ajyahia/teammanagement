@@ -91,6 +91,9 @@
                         @else
                             <span class="badge badge-secondary" style="margin-left: 10px; font-size: 0.75rem;">{{ __('One Time') }}</span>
                         @endif
+                        <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn-icon btn-secondary" style="margin-inline-start: 10px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: var(--radius-sm); text-decoration: none;" title="{{ __('Edit Project') }}">
+                            <i class="ri-edit-2-line" style="font-size: 1rem;"></i>
+                        </a>
                     </h4>
                     <span style="font-size: 0.85rem; color: var(--text-secondary);">
                         {{ __('Status:') }} 
@@ -103,8 +106,8 @@
                             };
                         @endphp
                         <strong style="color: {{ $statusColor }}">{{ __(ucfirst(str_replace('_', ' ', $project->status))) }}</strong>
-                        | {{ __('Agreed Price:') }} <strong>{{ number_format($project->agreed_price, 2) }}</strong>
-                        | <span style="color: var(--green);">{{ __('Paid:') }} <strong>{{ number_format($project->paid_amount, 2) }}</strong></span>
+                        | {{ __('Total Billed:') }} <strong>{{ number_format($project->total_revenue, 2) }}</strong>
+                        | <span style="color: var(--green);">{{ __('Paid:') }} <strong>{{ number_format($project->total_paid, 2) }}</strong></span>
                         | <span style="color: var(--orange);">{{ __('Due:') }} <strong>{{ number_format($project->due_amount, 2) }}</strong></span>
                         <br><br>
                         {{ __('Assigned Employees:') }} 

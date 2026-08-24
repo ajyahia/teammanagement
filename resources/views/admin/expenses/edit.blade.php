@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'تعديل مصروف')
 @section('page_header', 'تعديل مصروف')
@@ -9,29 +9,29 @@
 
 @section('content')
     <div class="card">
-        <h4 style="margin-top:0;">تعديل بيانات المصروف</h4>
-        <form action="{{ route('admin.expenses.update', \->id) }}" method="POST">
+        <h4 style="margin-top:0;">{{ __('Edit Expense') }}</h4>
+        <form action="{{ route('admin.expenses.update', $expense->id) }}" method="POST">
             @csrf
             @method('PUT')
             <div class="form-group">
-                <label>اسم المصروف (البيان)</label>
-                <input type="text" name="title" class="form-control" value="{{ \->title }}" required>
+                <label>{{ __('Description') }}</label>
+                <input type="text" name="title" class="form-control" value="{{ $expense->title }}" required>
             </div>
             <div class="form-group" style="margin-top: 15px;">
-                <label>المبلغ</label>
-                <input type="number" step="0.01" name="amount" class="form-control" value="{{ \->amount }}" required>
+                <label>{{ __('Amount') }}</label>
+                <input type="number" step="0.01" name="amount" class="form-control" value="{{ $expense->amount }}" required>
             </div>
             <div class="form-group" style="margin-top: 15px;">
-                <label>التاريخ</label>
-                <input type="date" name="expense_date" class="form-control" value="{{ \->expense_date->format('Y-m-d') }}" required>
+                <label>{{ __('Date') }}</label>
+                <input type="date" name="expense_date" class="form-control" value="{{ $expense->expense_date->format('Y-m-d') }}" required>
             </div>
             <div class="form-group" style="margin-top: 15px;">
-                <label>ملاحظات (اختياري)</label>
-                <textarea name="notes" class="form-control" rows="3">{{ \->notes }}</textarea>
+                <label>{{ __('Notes (Optional)') }}</label>
+                <textarea name="notes" class="form-control" rows="3">{{ $expense->notes }}</textarea>
             </div>
             <div style="margin-top: 20px;">
-                <button type="submit" class="btn btn-primary">تحديث المصروف</button>
-                <a href="{{ route('admin.expenses.index') }}" class="btn btn-secondary">إلغاء</a>
+                <button type="submit" class="btn btn-primary">{{ __('Update Expense') }}</button>
+                <a href="{{ route('admin.expenses.index') }}" class="btn btn-secondary">{{ __('Cancel') }}</a>
             </div>
         </form>
     </div>

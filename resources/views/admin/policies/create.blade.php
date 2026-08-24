@@ -37,7 +37,7 @@
                 <!-- Title Arabic -->
                 <div class="form-group">
                     <label for="title_ar">{{ __('Title (Arabic)') }} <span style="color: var(--red);">*</span></label>
-                    <input type="text" id="title_ar" name="title_ar" value="{{ old('title_ar') }}" placeholder="مثال: مواعيد العمل والحضور" required>
+                    <input type="text" id="title_ar" name="title_ar" value="{{ old('title_ar') }}" placeholder="{{ __('e.g. Working Hours') }}" required>
                     @error('title_ar')
                         <span style="color: var(--red); font-size: 0.8rem; margin-top: 4px;">{{ $message }}</span>
                     @enderror
@@ -82,7 +82,7 @@
                 <!-- Content Arabic -->
                 <div class="form-group full-width">
                     <label for="content_ar">{{ __('Content (Arabic)') }} <span style="color: var(--red);">*</span></label>
-                    <textarea id="content_ar" name="content_ar" rows="6" placeholder="اكتب تفاصيل السياسة باللغة العربية..." required>{{ old('content_ar') }}</textarea>
+                    <textarea id="content_ar" name="content_ar" rows="6" placeholder="{{ __('Write the policy details in Arabic...') }}" required>{{ old('content_ar') }}</textarea>
                     @error('content_ar')
                         <span style="color: var(--red); font-size: 0.8rem; margin-top: 4px;">{{ $message }}</span>
                     @enderror

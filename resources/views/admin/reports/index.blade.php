@@ -50,7 +50,7 @@
                     <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['monthly_salaries'], 2) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <span style="color: var(--text-secondary);">المصروفات</span>
+                    <span style="color: var(--text-secondary);">{{ __('Expenses') }}</span>
                     <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['monthly_expenses'], 2) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
@@ -77,7 +77,7 @@
                     <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['all_time_salaries'], 2) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <span style="color: var(--text-secondary);">إجمالي المصروفات</span>
+                    <span style="color: var(--text-secondary);">{{ __('Total Expenses') }}</span>
                     <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['all_time_expenses'], 2) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">

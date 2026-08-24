@@ -51,9 +51,25 @@ class Project extends Model
         return collect([$this->agreed_price])->first();
     }
 
+    public function getTotalRevenueAttribute()
+    {
+        if (in_array($this->billing_type, ['monthly', 'yearly'])) {
+            return $this->cycles->sum('amount');
+        }
+        return $this->agreed_price;
+    }
+
+    public function getTotalPaidAttribute()
+    {
+        if (in_array($this->billing_type, ['monthly', 'yearly'])) {
+            return $this->cycles->where('is_paid', true)->sum('amount');
+        }
+        return $this->paid_amount;
+    }
+
     public function getDueAmountAttribute()
     {
-        return $this->agreed_price - $this->paid_amount;
+        return $this->total_revenue - $this->total_paid;
     }
 
     public function payments()
