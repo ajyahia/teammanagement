@@ -104,7 +104,7 @@
                 <!-- Net Salary Display (الصافي / المرتب بعد) -->
                 <div class="salary-net-block">
                     <div class="net-salary-title">{{ __('Net Salary') }}</div>
-                    <div class="net-salary-amount">
+                    <div class="net-salary-amount" style="{{ $r['net_salary'] < 0 ? 'color: var(--red);' : '' }}">
                         {{ number_format($r['net_salary'], 2) }}
                     </div>
                 </div>

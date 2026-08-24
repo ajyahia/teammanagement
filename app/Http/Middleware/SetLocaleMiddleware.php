@@ -17,7 +17,7 @@ class SetLocaleMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Set locale from session if set, default to en
+        // Set locale from session if set, default to ar
         $appLocale = Session::get('locale', config('app.locale', 'ar'));
         App::setLocale($appLocale);
 

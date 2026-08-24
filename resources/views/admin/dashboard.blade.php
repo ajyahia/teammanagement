@@ -72,7 +72,7 @@
             </div>
             <div class="stat-info">
                 <h3>{{ __('Treasury Balance') }}</h3>
-                <p style="font-size: 1.6rem; color: var(--green);">{{ number_format($financials['treasury'], 2) }}</p>
+                <p style="font-size: 1.6rem; color: var(--green);">{{ number_format($financials['treasury'], 0) }}</p>
                 <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Current available safe balance') }}</span>
             </div>
         </div>
@@ -84,7 +84,7 @@
             </div>
             <div class="stat-info">
                 <h3>{{ __('Monthly Service Dues') }}</h3>
-                <p style="font-size: 1.6rem; color: var(--color-primary);">{{ number_format($financials['monthly_dues'], 2) }}</p>
+                <p style="font-size: 1.6rem; color: var(--color-primary);">{{ number_format($financials['monthly_dues'], 0) }}</p>
                 <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Owed by monthly/yearly clients') }}</span>
             </div>
         </div>
@@ -96,7 +96,7 @@
             </div>
             <div class="stat-info">
                 <h3>{{ __('Project Dues') }}</h3>
-                <p style="font-size: 1.6rem; color: var(--orange);">{{ number_format($financials['regular_dues'], 2) }}</p>
+                <p style="font-size: 1.6rem; color: var(--orange);">{{ number_format($financials['regular_dues'], 0) }}</p>
                 <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Owed by regular project clients') }}</span>
             </div>
         </div>

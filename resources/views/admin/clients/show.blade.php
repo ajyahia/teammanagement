@@ -123,7 +123,6 @@
                         @endif
                     </span>
                 </div>
-                </div>
             </div>
         </div>
     @empty

@@ -78,7 +78,6 @@ class SalaryService
             $totalBonuses = $manualBonus;
 
             $netSalary = $baseSalary - $totalDeductions + $totalBonuses;
-            if ($netSalary < 0) $netSalary = 0.00;
 
             // Hide employees with absolutely no financial activity this month
             if ($baseSalary == 0 && $totalBonuses == 0 && $totalDeductions == 0 && !$allPayments->has($emp->id)) {
@@ -156,7 +155,6 @@ class SalaryService
         $manualDeduction = $adjustments->whereIn('type', ['deduction', 'advance'])->sum('amount') + $adjustments->sum('deduction');
 
         $netSalary = $baseSalary - $absentDeduction - $manualDeduction + $manualBonus;
-        if ($netSalary < 0) $netSalary = 0.00;
 
         return [
             'expected_working_days' => $expectedWorkingDays,

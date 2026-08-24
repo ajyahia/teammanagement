@@ -148,7 +148,7 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; background-color: rgba(50, 138, 241, 0.05); padding: 12px; border-radius: var(--radius-md);">
                     <span style="font-weight: 700; color: var(--color-primary-light);">{{ __('Net Salary') }}:</span>
-                    <div style="font-family: var(--font-title); font-size: 1.4rem; font-weight: 800; color: var(--teal); text-shadow: 0 0 10px rgba(26, 171, 139, 0.3);">
+                    <div style="font-family: var(--font-title); font-size: 1.4rem; font-weight: 800; color: {{ $activeReport['net_salary'] < 0 ? 'var(--red)' : 'var(--teal)' }}; text-shadow: 0 0 10px rgba(26, 171, 139, 0.3);">
                         {{ number_format($activeReport['net_salary'], 2) }}
                     </div>
                 </div>
