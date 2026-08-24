@@ -116,7 +116,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/cycles/{cycle}', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'destroy'])->name('projects.cycles.destroy');
 
         // Reports & Analytics
-        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/services', [AdminReportController::class, 'services'])->name('reports.services');
+        Route::get('/reports/employees', [AdminReportController::class, 'employees'])->name('reports.employees');
 
         // Expenses
         Route::resource('expenses', AdminExpenseController::class)->except(['show']);

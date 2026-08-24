@@ -73,9 +73,15 @@
         <span>المصروفات</span>
     </a>
 </li>
-<li class="sidebar-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
-    <a href="/admin/reports">
-        <i class="ri-bar-chart-box-fill"></i>
-        <span>{{ __('Reports & Analytics') }}</span>
+<li class="sidebar-item {{ request()->is('admin/reports/services*') ? 'active' : '' }}">
+    <a href="/admin/reports/services">
+        <i class="ri-customer-service-2-fill"></i>
+        <span>{{ __('Service Reports') }}</span>
+    </a>
+</li>
+<li class="sidebar-item {{ request()->is('admin/reports/employees*') ? 'active' : '' }}">
+    <a href="/admin/reports/employees">
+        <i class="ri-user-settings-fill"></i>
+        <span>{{ __('Employee Reports') }}</span>
     </a>
 </li>
