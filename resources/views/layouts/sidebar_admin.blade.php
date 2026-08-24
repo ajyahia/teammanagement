@@ -73,15 +73,17 @@
         <span>المصروفات</span>
     </a>
 </li>
+<hr style="border-color: rgba(255,255,255,0.05); margin: 10px 16px;">
+
 <li class="sidebar-item {{ request()->is('admin/reports/services*') ? 'active' : '' }}">
     <a href="/admin/reports/services">
-        <i class="ri-customer-service-2-fill"></i>
+        <i class="ri-pie-chart-2-fill"></i>
         <span>{{ __('Service Reports') }}</span>
     </a>
 </li>
 <li class="sidebar-item {{ request()->is('admin/reports/employees*') ? 'active' : '' }}">
     <a href="/admin/reports/employees">
-        <i class="ri-user-settings-fill"></i>
+        <i class="ri-bar-chart-grouped-fill"></i>
         <span>{{ __('Employee Reports') }}</span>
     </a>
 </li>
