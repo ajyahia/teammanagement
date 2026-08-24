@@ -30,7 +30,7 @@ class ExpenseController extends Controller
 
         Expense::create($validated);
 
-        return redirect()->route('expenses.index')->with('success', 'تم إضافة المصروف بنجاح');
+        return redirect()->route('admin.expenses.index')->with('success', 'تم إضافة المصروف بنجاح');
     }
 
     public function edit(Expense $expense)
@@ -49,12 +49,12 @@ class ExpenseController extends Controller
 
         $expense->update($validated);
 
-        return redirect()->route('expenses.index')->with('success', 'تم تحديث المصروف بنجاح');
+        return redirect()->route('admin.expenses.index')->with('success', 'تم تحديث المصروف بنجاح');
     }
 
     public function destroy(Expense $expense)
     {
         $expense->delete();
-        return redirect()->route('expenses.index')->with('success', 'تم حذف المصروف بنجاح');
+        return redirect()->route('admin.expenses.index')->with('success', 'تم حذف المصروف بنجاح');
     }
 }

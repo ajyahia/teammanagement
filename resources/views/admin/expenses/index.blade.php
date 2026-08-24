@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'إدارة المصروفات')
 @section('page_header', 'المصروفات')
@@ -42,21 +42,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse(\ as \)
+                    @forelse($expenses as $expense)
                         <tr>
-                            <td><strong>{{ \->title }}</strong></td>
-                            <td>{{ number_format(\->amount, 2) }}</td>
-                            <td>{{ \->expense_date->format('Y-m-d') }}</td>
-                            <td>{{ \->notes ?: '-' }}</td>
+                            <td><strong>{{ $expense->title }}</strong></td>
+                            <td>{{ number_format($expense->amount, 2) }}</td>
+                            <td>{{ $expense->expense_date->format('Y-m-d') }}</td>
+                            <td>{{ $expense->notes ?: '-' }}</td>
                             <td>
                                 <div style="display: flex; justify-content: center; gap: 8px;">
-                                    <a href="{{ route('admin.expenses.edit', \->id) }}" class="btn-icon btn-secondary" title="تعديل">
+                                    <a href="{{ route('admin.expenses.edit', $expense->id) }}" class="btn-icon btn-secondary" title="تعديل">
                                         <i class="ri-edit-2-line"></i>
                                     </a>
-                                    <form id="delete-expense-form-{{ \->id }}" action="{{ route('admin.expenses.destroy', \->id) }}" method="POST" style="display:inline;">
+                                    <form id="delete-expense-form-{{ $expense->id }}" action="{{ route('admin.expenses.destroy', $expense->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-danger btn-icon" title="حذف" onclick="showGlobalConfirmPopup('delete-expense-form-{{ \->id }}', 'هل أنت متأكد من حذف هذا المصروف؟')">
+                                        <button type="button" class="btn btn-danger btn-icon" title="حذف" onclick="showGlobalConfirmPopup('delete-expense-form-{{ $expense->id }}', 'هل أنت متأكد من حذف هذا المصروف؟')">
                                             <i class="ri-delete-bin-fill"></i>
                                         </button>
                                     </form>
@@ -74,9 +74,9 @@
                 </tbody>
             </table>
         </div>
-        @if(\->hasPages())
+        @if($expenses->hasPages())
             <div style="margin-top: 20px;">
-                {{ \->links() }}
+                {{ $expenses->links() }}
             </div>
         @endif
     </div>
