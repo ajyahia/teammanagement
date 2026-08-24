@@ -33,15 +33,16 @@
         </div>
     </div>
 
-    <!-- Employee Chart -->
-    <div class="chart-container">
-        <div style="width: 100%; height: 350px;">
-            <canvas id="employeeChart"></canvas>
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+        <!-- Employee Chart -->
+        <div class="card" style="flex: 1; min-width: 400px; margin-bottom: 0;">
+            <div style="width: 100%; height: 350px;">
+                <canvas id="employeeChart"></canvas>
+            </div>
         </div>
-    </div>
 
         <!-- Employees Report Table -->
-        <div class="card">
+        <div class="card" style="flex: 2; min-width: 500px; margin-bottom: 0;">
             <h4 style="font-family: var(--font-title); margin-top: 0; margin-bottom: 20px; font-weight: 600;">
                 <i class="ri-table-line" style="color: var(--orange); margin-right: 8px;"></i>
                 {{ __('Revenue by Employee') }}
@@ -83,6 +84,7 @@
                 </table>
             </div>
         </div>
+    </div>
     <!-- Chart.js Integration -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>

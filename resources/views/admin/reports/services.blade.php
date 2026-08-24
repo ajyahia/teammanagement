@@ -90,44 +90,47 @@
         </div>
     </div>
 
-    <!-- Service Chart -->
-    <div class="chart-container" style="display: flex; justify-content: center;">
-        <div style="width: 100%; max-width: 600px; height: 300px;">
-            <canvas id="serviceChart"></canvas>
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+        
+        <!-- Service Chart (Left Side) -->
+        <div class="card" style="flex: 1; min-width: 300px; margin-bottom: 0;">
+            <div style="width: 100%; height: 350px; display: flex; justify-content: center; align-items: center;">
+                <canvas id="serviceChart"></canvas>
+            </div>
         </div>
-    </div>
 
-    <!-- Services Report Table -->
-    <div class="card" style="margin-bottom: 24px;">
-        <h4 style="font-family: var(--font-title); margin-top: 0; margin-bottom: 20px; font-weight: 600;">
-            <i class="ri-customer-service-2-fill" style="color: var(--color-primary); margin-right: 8px;"></i>
-            {{ __('Revenue by Service') }}
-        </h4>
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>{{ __('Service') }}</th>
-                        <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->format('M Y') }})</small></th>
-                        <th>{{ __('All-Time Revenue') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($serviceStats as $stat)
+        <!-- Services Report Table (Right Side) -->
+        <div class="card" style="flex: 2; min-width: 400px; margin-bottom: 0;">
+            <h4 style="font-family: var(--font-title); margin-top: 0; margin-bottom: 20px; font-weight: 600;">
+                <i class="ri-customer-service-2-fill" style="color: var(--color-primary); margin-right: 8px;"></i>
+                {{ __('Revenue by Service') }}
+            </h4>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <td><strong>{{ $stat['name'] }}</strong></td>
-                            <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--color-primary-light);">{{ number_format($stat['monthly_revenue'], 2) }}</td>
-                            <td style="font-weight: bold;">{{ number_format($stat['all_time_revenue'], 2) }}</td>
+                            <th>{{ __('Service') }}</th>
+                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->format('M Y') }})</small></th>
+                            <th>{{ __('All-Time Revenue') }}</th>
                         </tr>
-                    @endforeach
-                    @if(count($serviceStats) === 0)
-                        <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">{{ __('No services found.') }}</td></tr>
-                    @endif
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach($serviceStats as $stat)
+                            <tr>
+                                <td><strong>{{ $stat['name'] }}</strong></td>
+                                <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--color-primary-light);">{{ number_format($stat['monthly_revenue'], 2) }}</td>
+                                <td style="font-weight: bold;">{{ number_format($stat['all_time_revenue'], 2) }}</td>
+                            </tr>
+                        @endforeach
+                        @if(count($serviceStats) === 0)
+                            <tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">{{ __('No services found.') }}</td></tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
+    </div>
     <!-- Chart.js Integration -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
