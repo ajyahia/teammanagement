@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/settings/budget', [AdminSettingsController::class, 'saveBudget'])->name('settings.budget');
         Route::post('/settings/specific', [AdminSettingsController::class, 'addSpecific'])->name('settings.specific');
         Route::delete('/settings/specific/{holiday}', [AdminSettingsController::class, 'deleteSpecific'])->name('settings.specific.delete');
+        Route::post('/settings/hours', [AdminSettingsController::class, 'saveHours'])->name('settings.hours');
 
         // Salaries & Adjustments
         Route::get('/salaries', [AdminSalaryController::class, 'index'])->name('salaries.index');

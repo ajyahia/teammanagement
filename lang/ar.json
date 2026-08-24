@@ -540,5 +540,19 @@
     "new billing cycles generated.": "دورات فوترة جديدة تم إنشاؤها.",
     "Amount to Pay": "المبلغ المدفوع",
     "If you pay more than the net salary, the extra amount will be added as a deduction\/advance for next month.": "إذا قمت بدفع مبلغ أكبر من صافي الراتب، سيتم ترحيل الزيادة كـ (سلفة \/ خصم) على راتب الشهر القادم تلقائياً.",
-    "The extra amount was automatically carried over as an advance for next month.": "تم ترحيل المبلغ الزائد تلقائياً كسلفة على الشهر القادم."
+    "The extra amount was automatically carried over as an advance for next month.": "تم ترحيل المبلغ الزائد تلقائياً كسلفة على الشهر القادم.",
+    "Company Working Hours": "ساعات العمل الرسمية للشركة",
+    "Set the default shift start and end times for the company.": "قم بتحديد بداية ونهاية الدوام الرسمي للشركة.",
+    "Start Time": "وقت الحضور",
+    "End Time": "وقت الانصراف",
+    "Save Hours": "حفظ المواعيد",
+    "Company working hours updated successfully.": "تم تحديث مواعيد العمل بنجاح.",
+    "Financial Overview": "الملخص المالي",
+    "Treasury Balance": "رصيد الخزنة",
+    "Current available safe balance": "الرصيد المتاح حالياً في الخزنة",
+    "Monthly Service Dues": "مستحقات الخدمات الشهرية",
+    "Owed by monthly\/yearly clients": "المبالغ المتبقية على عملاء الاشتراكات",
+    "Project Dues": "مستحقات المشاريع",
+    "Owed by regular project clients": "المبالغ المتبقية على عملاء المشاريع العادية",
+    "HR & Attendance": "الموارد البشرية والحضور"
 }

@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\AttendanceRecord;
+use App\Models\Setting;
+use App\Models\Project;
+use App\Models\SalaryPayment;
+use App\Models\Expense;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
@@ -34,6 +38,26 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'attendance_rate', 'recent_activities'));
+        // Financial Metrics Calculation
+        $budget = (float) Setting::getVal('company_budget', 0);
+        $totalSalaryPayments = (float) SalaryPayment::sum('amount');
+        $totalExpenses = (float) Expense::sum('amount');
+
+        $projects = Project::with('cycles')->get();
+        
+        $totalProjectIncomes = $projects->sum('total_paid');
+        
+        $treasuryBalance = $budget + $totalProjectIncomes - $totalSalaryPayments - $totalExpenses;
+
+        $monthlyDues = $projects->whereIn('billing_type', ['monthly', 'yearly'])->sum('due_amount');
+        $regularDues = $projects->where('billing_type', 'per_project')->sum('due_amount');
+
+        $financials = [
+            'treasury' => $treasuryBalance,
+            'monthly_dues' => $monthlyDues,
+            'regular_dues' => $regularDues,
+        ];
+
+        return view('admin.dashboard', compact('stats', 'attendance_rate', 'recent_activities', 'financials'));
     }
 }

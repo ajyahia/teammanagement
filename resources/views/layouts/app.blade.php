@@ -130,25 +130,54 @@
                     </div>
 
                     @if(auth()->guard('client')->check())
-                        <div class="user-profile" style="text-decoration: none;">
-                            <div class="user-info">
-                                <span class="user-name">{{ auth()->guard('client')->user()->name }}</span>
-                                <span class="user-role">{{ __('Client') }}</span>
+                        <div class="user-dropdown-container" style="position: relative;" onmouseover="document.getElementById('client-dropdown-menu').style.display='block'" onmouseout="document.getElementById('client-dropdown-menu').style.display='none'">
+                            <div class="user-profile" style="cursor: pointer;">
+                                <div class="user-info">
+                                    <span class="user-name">{{ auth()->guard('client')->user()->name }}</span>
+                                    <span class="user-role">{{ __('Client') }}</span>
+                                </div>
+                                <div class="user-avatar" style="background: rgba(0, 158, 253, 0.1); color: var(--color-primary);">
+                                    {{ strtoupper(substr(auth()->guard('client')->user()->name, 0, 1)) }}
+                                </div>
                             </div>
-                            <div class="user-avatar" style="background: rgba(0, 158, 253, 0.1); color: var(--color-primary);">
-                                {{ strtoupper(substr(auth()->guard('client')->user()->name, 0, 1)) }}
+                            <div id="client-dropdown-menu" style="display: none; position: absolute; top: 100%; {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }} background: var(--bg-card, #1e1e2d); border: 1px solid var(--border-color, #2b2b40); border-radius: 8px; min-width: 180px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 8px 0; margin-top: 8px;">
+                                <a href="/client/profile" style="display: flex; align-items: center; padding: 10px 16px; color: var(--text-main, #fff); text-decoration: none; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
+                                    <i class="ri-user-line" style="margin-inline-end: 8px; color: var(--color-primary);"></i> {{ __('My Profile') }}
+                                </a>
+                                <div style="height: 1px; background: var(--border-color, #2b2b40); margin: 4px 0;"></div>
+                                <form action="{{ route('client.logout') }}" method="POST" style="margin: 0;">
+                                    @csrf
+                                    <button type="submit" style="display: flex; align-items: center; width: 100%; text-align: start; background: none; border: none; padding: 10px 16px; color: var(--red, #f1416c); cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
+                                        <i class="ri-logout-box-r-line" style="margin-inline-end: 8px;"></i> {{ __('Logout') }}
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     @else
-                        <a href="{{ auth()->user()->role === 'admin' ? '/admin/employees/' . auth()->user()->id . '/edit' : '/employee/profile' }}" class="user-profile" style="text-decoration: none;">
-                            <div class="user-info">
-                                <span class="user-name">{{ auth()->user()->name }}</span>
-                                <span class="user-role">{{ __(ucfirst(auth()->user()->role)) }}</span>
+                        <div class="user-dropdown-container" style="position: relative;" onmouseover="document.getElementById('user-dropdown-menu').style.display='block'" onmouseout="document.getElementById('user-dropdown-menu').style.display='none'">
+                            <div class="user-profile" style="cursor: pointer;">
+                                <div class="user-info">
+                                    <span class="user-name">{{ auth()->user()->name }}</span>
+                                    <span class="user-role">{{ __(ucfirst(auth()->user()->role)) }}</span>
+                                </div>
+                                <div class="user-avatar">
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                </div>
                             </div>
-                            <div class="user-avatar">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            
+                            <div id="user-dropdown-menu" style="display: none; position: absolute; top: 100%; {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }} background: var(--bg-card, #1e1e2d); border: 1px solid var(--border-color, #2b2b40); border-radius: 8px; min-width: 180px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 8px 0; margin-top: 8px;">
+                                <a href="{{ auth()->user()->role === 'admin' ? '/admin/employees/' . auth()->user()->id . '/edit' : '/employee/profile' }}" style="display: flex; align-items: center; padding: 10px 16px; color: var(--text-main, #fff); text-decoration: none; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
+                                    <i class="ri-user-line" style="margin-inline-end: 8px; color: var(--color-primary);"></i> {{ __('My Profile') }}
+                                </a>
+                                <div style="height: 1px; background: var(--border-color, #2b2b40); margin: 4px 0;"></div>
+                                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                                    @csrf
+                                    <button type="submit" style="display: flex; align-items: center; width: 100%; text-align: start; background: none; border: none; padding: 10px 16px; color: var(--red, #f1416c); cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
+                                        <i class="ri-logout-box-r-line" style="margin-inline-end: 8px;"></i> {{ __('Logout') }}
+                                    </button>
+                                </form>
                             </div>
-                        </a>
+                        </div>
                     @endif
                 </div>
             </header>

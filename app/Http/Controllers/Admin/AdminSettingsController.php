@@ -19,8 +19,10 @@ class AdminSettingsController extends Controller
 
         $specificHolidays = SpecificHoliday::orderBy('date', 'asc')->get();
         $budget = Setting::getVal('company_budget', 0);
+        $workStart = Setting::getVal('default_work_start', '11:00');
+        $workEnd = Setting::getVal('default_work_end', '19:00');
 
-        return view('admin.settings.index', compact('weeklyHolidays', 'specificHolidays', 'budget'));
+        return view('admin.settings.index', compact('weeklyHolidays', 'specificHolidays', 'budget', 'workStart', 'workEnd'));
     }
 
     /**
@@ -79,5 +81,21 @@ class AdminSettingsController extends Controller
     {
         $holiday->delete();
         return redirect()->route('admin.settings.index')->with('success', 'Holiday date removed successfully.');
+    }
+
+    /**
+     * Save company working hours.
+     */
+    public function saveHours(Request $request)
+    {
+        $validatedData = $request->validate([
+            'default_work_start' => ['required', 'date_format:H:i'],
+            'default_work_end' => ['required', 'date_format:H:i'],
+        ]);
+
+        Setting::setVal('default_work_start', $validatedData['default_work_start']);
+        Setting::setVal('default_work_end', $validatedData['default_work_end']);
+
+        return redirect()->route('admin.settings.index')->with('success', 'Company working hours updated successfully.');
     }
 }

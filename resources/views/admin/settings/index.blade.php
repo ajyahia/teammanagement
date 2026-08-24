@@ -211,6 +211,32 @@
             </form>
         </div>
         
+        <!-- Company Working Hours -->
+        <div class="card" style="margin-bottom: 0;">
+            <h3 class="card-title">
+                <i class="ri-time-line" style="color: var(--teal);"></i>
+                <span>{{ __('Company Working Hours') }}</span>
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+                {{ __('Set the default shift start and end times for the company.') }}
+            </p>
+            
+            <form method="POST" action="{{ route('admin.settings.hours') }}" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                @csrf
+                <div class="form-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+                    <label class="form-label">{{ __('Start Time') }} <span style="color: red;">*</span></label>
+                    <input type="time" name="default_work_start" class="form-control" required value="{{ old('default_work_start', $workStart) }}" style="padding: 10px; width: 100%;">
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+                    <label class="form-label">{{ __('End Time') }} <span style="color: red;">*</span></label>
+                    <input type="time" name="default_work_end" class="form-control" required value="{{ old('default_work_end', $workEnd) }}" style="padding: 10px; width: 100%;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="height: 48px;">
+                    <i class="ri-save-fill"></i> {{ __('Save Hours') }}
+                </button>
+            </form>
+        </div>
+        
         <!-- Weekly Holidays -->
         <div class="card" style="margin-bottom: 0;">
             <h3 class="card-title">

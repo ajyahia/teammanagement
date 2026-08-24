@@ -59,7 +59,54 @@
         </div>
     </div>
 
+    <!-- Financial Overview -->
+    <h3 style="margin: 30px 0 16px 0; font-family: var(--font-title); font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+        <i class="ri-pie-chart-2-fill" style="color: var(--color-primary);"></i>
+        <span>{{ __('Financial Overview') }}</span>
+    </h3>
+    <div class="stats-grid" style="margin-bottom: 30px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+        <!-- Card 1: Treasury Balance -->
+        <div class="stat-card" style="background: linear-gradient(135deg, var(--bg-card) 0%, rgba(26, 171, 139, 0.05) 100%); border-left: 4px solid var(--green);">
+            <div class="stat-icon icon-green" style="background-color: rgba(26, 171, 139, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="ri-safe-2-fill" style="font-size: 24px; color: var(--green);"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ __('Treasury Balance') }}</h3>
+                <p style="font-size: 1.6rem; color: var(--green);">{{ number_format($financials['treasury'], 2) }}</p>
+                <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Current available safe balance') }}</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Dues (Monthly) -->
+        <div class="stat-card" style="background: linear-gradient(135deg, var(--bg-card) 0%, rgba(50, 138, 241, 0.05) 100%); border-left: 4px solid var(--color-primary);">
+            <div class="stat-icon icon-primary" style="background-color: rgba(50, 138, 241, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="ri-calendar-todo-fill" style="font-size: 24px; color: var(--color-primary);"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ __('Monthly Service Dues') }}</h3>
+                <p style="font-size: 1.6rem; color: var(--color-primary);">{{ number_format($financials['monthly_dues'], 2) }}</p>
+                <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Owed by monthly/yearly clients') }}</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Dues (Regular) -->
+        <div class="stat-card" style="background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255, 152, 0, 0.05) 100%); border-left: 4px solid var(--orange);">
+            <div class="stat-icon icon-orange" style="background-color: rgba(255, 152, 0, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="ri-folder-chart-fill" style="font-size: 24px; color: var(--orange);"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ __('Project Dues') }}</h3>
+                <p style="font-size: 1.6rem; color: var(--orange);">{{ number_format($financials['regular_dues'], 2) }}</p>
+                <span style="font-size: 0.75rem; color: var(--text-secondary);">{{ __('Owed by regular project clients') }}</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Stats Grid -->
+    <h3 style="margin: 0 0 16px 0; font-family: var(--font-title); font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+        <i class="ri-team-fill" style="color: var(--teal);"></i>
+        <span>{{ __('HR & Attendance') }}</span>
+    </h3>
     <div class="stats-grid">
         <!-- Card 1: Total Employees -->
         <div class="stat-card" style="background: linear-gradient(135deg, var(--bg-card) 0%, rgba(50, 138, 241, 0.03) 100%);">

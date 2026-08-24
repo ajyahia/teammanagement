@@ -112,10 +112,15 @@ class SalaryService
             $expectedWorkingDays = $this->calculateExpectedWorkingDays($month, $year);
         }
 
-        $start = Carbon::parse($user->work_start_time);
-        $end = Carbon::parse($user->work_end_time);
+        $workStart = $user->work_start_time ?? Setting::getVal('default_work_start', '09:00');
+        $workEnd = $user->work_end_time ?? Setting::getVal('default_work_end', '17:00');
+
+        $start = Carbon::parse($workStart);
+        $end = Carbon::parse($workEnd);
         $shiftHours = $start->diffInMinutes($end) / 60.0;
-        if ($shiftHours <= 0) $shiftHours = 8.0;
+        if ($shiftHours <= 0) {
+            $shiftHours = 8.0; // Fallback
+        }
 
         $expectedWorkingHours = $expectedWorkingDays * $shiftHours;
 
