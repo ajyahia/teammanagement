@@ -128,15 +128,41 @@ class AdminSalaryController extends Controller
             return redirect()->back()->with('error', __('Salary is already marked as paid.'));
         }
 
+        $activeReport = $this->salaryService->calculateEmployeeMonthlySalary($user, $validatedData['month'], $validatedData['year']);
+        $netSalary = $activeReport['net_salary'];
+        $paidAmount = (float)$validatedData['amount'];
+        $excess = $paidAmount - $netSalary;
+
         SalaryPayment::create([
             'user_id' => $user->id,
             'month' => (int)$validatedData['month'],
             'year' => (int)$validatedData['year'],
-            'amount' => $validatedData['amount'],
+            'amount' => $paidAmount,
             'notes' => $validatedData['notes'] ?? null,
         ]);
 
-        return redirect()->back()->with('success', __('Salary payment recorded successfully.'));
+        $message = __('Salary payment recorded successfully.');
+
+        if ($excess > 0) {
+            $nextMonth = $validatedData['month'] == 12 ? 1 : $validatedData['month'] + 1;
+            $nextYear = $validatedData['month'] == 12 ? $validatedData['year'] + 1 : $validatedData['year'];
+
+            SalaryAdjustment::create([
+                'user_id' => $user->id,
+                'month' => $nextMonth,
+                'year' => $nextYear,
+                'type' => 'advance',
+                'amount' => $excess,
+                'bonus' => 0,
+                'deduction' => 0,
+                'notes' => 'سلفة مرحلة لزيادة مدفوعة في راتب شهر ' . $validatedData['month'],
+                'created_at' => now(),
+            ]);
+
+            $message .= ' ' . __('The extra amount was automatically carried over as an advance for next month.');
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**

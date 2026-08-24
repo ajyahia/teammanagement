@@ -196,8 +196,12 @@
                                 @csrf
                                 <input type="hidden" name="month" value="{{ (int)$month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
-                                <input type="hidden" name="amount" value="{{ $activeReport['net_salary'] }}">
                                 
+                                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
+                                    <label for="payment_amount" style="font-weight: 600; font-size: 0.8rem;">{{ __('Amount to Pay') }}</label>
+                                    <input type="number" step="0.01" name="amount" id="payment_amount" value="{{ $activeReport['net_salary'] }}" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-body, var(--bg-main)); color: var(--text-primary); font-family: var(--font-body); font-weight: bold; color: var(--teal);">
+                                    <small style="color: var(--text-secondary); font-size: 0.75rem;">{{ __('If you pay more than the net salary, the extra amount will be added as a deduction/advance for next month.') }}</small>
+                                </div>
                                 <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
                                     <label for="payment_notes" style="font-weight: 600; font-size: 0.8rem;">{{ __('Notes / Details') }}</label>
                                     <textarea name="notes" id="payment_notes" rows="2" placeholder="{{ __('Write payment details (e.g. Bank Transfer ID, Cash receipt reference)...') }}" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-body, var(--bg-main)); color: var(--text-primary); resize: none; font-size: 0.85rem; font-family: var(--font-body);"></textarea>

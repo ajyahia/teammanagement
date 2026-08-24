@@ -18,26 +18,30 @@
             @csrf
             @method('PUT')
             
-            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">{{ __('Personal Details (Read-only)') }}</h3>
+            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">{{ __('Personal Details') }}</h3>
             <div class="form-grid" style="margin-top: 15px;">
                 <div class="form-group">
-                    <label>{{ __('Full Name') }}</label>
-                    <input type="text" value="{{ $employee->name }}" readonly>
+                    <label for="name">{{ __('Full Name') }} *</label>
+                    <input type="text" name="name" id="name" value="{{ old('name', $employee->name) }}" required>
+                    @error('name') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group">
-                    <label>{{ __('Age') }}</label>
-                    <input type="number" value="{{ $employee->age }}" readonly>
+                    <label for="age">{{ __('Age') }} *</label>
+                    <input type="number" name="age" id="age" value="{{ old('age', $employee->age) }}" required>
+                    @error('age') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group">
-                    <label>{{ __('Job Title') }}</label>
-                    <input type="text" value="{{ $employee->job_title }}" readonly>
+                    <label for="job_title">{{ __('Job Title') }} *</label>
+                    <input type="text" name="job_title" id="job_title" value="{{ old('job_title', $employee->job_title) }}" required>
+                    @error('job_title') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group">
-                    <label>{{ __('Username') }}</label>
-                    <input type="text" value="{{ $employee->username }}" readonly>
+                    <label for="username">{{ __('Username') }} *</label>
+                    <input type="text" name="username" id="username" value="{{ old('username', $employee->username) }}" required>
+                    @error('username') <div class="error-message"><i class="ri-error-warning-line"></i> {{ $message }}</div> @enderror
                 </div>
             </div>
 

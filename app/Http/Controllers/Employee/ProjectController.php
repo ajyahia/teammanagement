@@ -13,7 +13,9 @@ class ProjectController extends Controller
     {
         // Get projects assigned to this employee
         $projects = Project::with(['client', 'service'])
-            ->where('employee_id', Auth::id())
+            ->whereHas('employees', function ($query) {
+                $query->where('users.id', Auth::id());
+            })
             ->latest()
             ->paginate(10);
             
@@ -23,7 +25,7 @@ class ProjectController extends Controller
     public function updateStatus(Request $request, Project $project)
     {
         // Ensure the project belongs to this employee
-        if ($project->employee_id !== Auth::id()) {
+        if (!$project->employees()->where('users.id', Auth::id())->exists()) {
             abort(403, 'Unauthorized action.');
         }
 

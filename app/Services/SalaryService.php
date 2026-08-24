@@ -80,6 +80,11 @@ class SalaryService
             $netSalary = $baseSalary - $totalDeductions + $totalBonuses;
             if ($netSalary < 0) $netSalary = 0.00;
 
+            // Hide employees with absolutely no financial activity this month
+            if ($baseSalary == 0 && $totalBonuses == 0 && $totalDeductions == 0 && !$allPayments->has($emp->id)) {
+                continue;
+            }
+
             $reports[] = [
                 'employee' => $emp,
                 'base_salary' => $baseSalary,

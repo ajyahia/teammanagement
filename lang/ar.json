@@ -84,7 +84,7 @@
     "Shift Hours": "ساعات الدوام",
     "Official Email": "البريد الرسمي",
     "Edit Profile Details": "تعديل تفاصيل الملف",
-    "Personal Details": "التفاصيل الشخصية",
+    "Personal Details": "البيانات الشخصية",
     "Personal Details (Read-only)": "التفاصيل الشخصية (للقراءة فقط)",
     "Contact & Security Details": "تفاصيل الاتصال والأمان",
     "Work & Contract Details (Read-only)": "تفاصيل العمل والعقد (للقراءة فقط)",
@@ -537,5 +537,8 @@
     "Months": "أشهر",
     "Generate Monthly Bills": "إصدار فواتير الشهر",
     "Generate billing cycles for all active subscriptions for the current month": "إنشاء دورات فوترة لجميع الاشتراكات النشطة للشهر الحالي",
-    "new billing cycles generated.": "دورات فوترة جديدة تم إنشاؤها."
+    "new billing cycles generated.": "دورات فوترة جديدة تم إنشاؤها.",
+    "Amount to Pay": "المبلغ المدفوع",
+    "If you pay more than the net salary, the extra amount will be added as a deduction\/advance for next month.": "إذا قمت بدفع مبلغ أكبر من صافي الراتب، سيتم ترحيل الزيادة كـ (سلفة \/ خصم) على راتب الشهر القادم تلقائياً.",
+    "The extra amount was automatically carried over as an advance for next month.": "تم ترحيل المبلغ الزائد تلقائياً كسلفة على الشهر القادم."
 }
