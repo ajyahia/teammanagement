@@ -22,7 +22,7 @@ class AdminDashboardController extends Controller
         
         $stats = [
             'total_employees' => User::where('role', 'employee')->activeOn($today)->count(),
-            'present_today' => AttendanceRecord::where('date', $today)->where('status', 'present')->count(),
+            'present_today' => app(\App\Services\AttendanceService::class)->presentToday(),
             'absent_today' => AttendanceRecord::where('date', $today)->where('status', 'absent')->count(),
             'vacation_today' => AttendanceRecord::where('date', $today)->where('status', 'vacation')->count(),
             'excused_today' => AttendanceRecord::where('date', $today)->where('status', 'excused')->count(),

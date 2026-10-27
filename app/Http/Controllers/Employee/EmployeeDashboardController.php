@@ -18,27 +18,13 @@ class EmployeeDashboardController extends Controller
         $currentMonth = date('m');
         $currentYear = date('Y');
 
+        $month = app(\App\Services\AttendanceService::class)->summary(auth()->user(), (int) $currentMonth, (int) $currentYear);
+
         $stats = [
-            'present_this_month' => AttendanceRecord::where('user_id', $userId)
-                ->whereMonth('date', $currentMonth)
-                ->whereYear('date', $currentYear)
-                ->where('status', 'present')
-                ->count(),
-            'absent_this_month' => AttendanceRecord::where('user_id', $userId)
-                ->whereMonth('date', $currentMonth)
-                ->whereYear('date', $currentYear)
-                ->where('status', 'absent')
-                ->count(),
-            'vacation_this_month' => AttendanceRecord::where('user_id', $userId)
-                ->whereMonth('date', $currentMonth)
-                ->whereYear('date', $currentYear)
-                ->where('status', 'vacation')
-                ->count(),
-            'excused_this_month' => AttendanceRecord::where('user_id', $userId)
-                ->whereMonth('date', $currentMonth)
-                ->whereYear('date', $currentYear)
-                ->where('status', 'excused')
-                ->count(),
+            'present_this_month' => $month['present'],
+            'absent_this_month' => $month['absent'],
+            'vacation_this_month' => $month['vacation'],
+            'excused_this_month' => $month['excused'],
             'vacation_balance' => VacationBalance::where('user_id', $userId)
                 ->where('year', $currentYear)
                 ->first(),

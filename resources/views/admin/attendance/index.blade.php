@@ -377,7 +377,8 @@
                         $record = $attendanceRecords->get($emp->id);
                         $status = $record ? $record->status : 'none';
                         $notes = $record ? $record->notes : '';
-                        $isRecordedPresent = $record && $record->status === 'present';
+                        // A past/today working day with no saved record counts as present by default
+                        $isRecordedPresent = ($record && $record->status === 'present') || (!$record && $date <= date('Y-m-d'));
                         $isOther = in_array($status, ['vacation', 'excused']);
                     @endphp
                     
@@ -428,10 +429,10 @@
                     <!-- Hidden Drawer for Notes / Status Override (Vacation / Excused) -->
                     <div id="drawer-{{ $emp->id }}" style="display: {{ $notes || $isOther ? 'block' : 'none' }}; background: rgba(0,0,0,0.15); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; margin-top: -6px; margin-bottom: 6px;" onclick="event.stopPropagation();">
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                            <div style="flex: 0 0 280px; max-width: 100%;">
+                            <div style="flex: 0 0 180px; max-width: 100%;">
                                 <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 4px; white-space: nowrap;">{{ __('Special Status Override') }}</label>
                                 <select name="statuses[{{ $emp->id }}]" id="status-override-{{ $emp->id }}" class="form-control" style="width: 100%; box-sizing: border-box; padding: 6px 10px; font-size: 0.85rem; text-overflow: ellipsis;" onchange="handleOverrideChange({{ $emp->id }})">
-                                    <option value="">-- {{ __('Follow Checkbox (Present/Absent)') }} --</option>
+                                    <option value="">—</option>
                                     <option value="vacation" {{ $status === 'vacation' ? 'selected' : '' }}>{{ __('Vacation') }}</option>
                                     <option value="excused" {{ $status === 'excused' ? 'selected' : '' }}>{{ __('Excused') }}</option>
                                 </select>
@@ -492,8 +493,10 @@
         });
 
         function handleCardClick(event, empId) {
-            // Prevent double-toggling if directly clicking the label/input
-            if (event.target.tagName.toLowerCase() === 'input' || event.target.tagName.toLowerCase() === 'select' || event.target.closest('button')) {
+            // The label (checkbox, avatar, name) already toggles the checkbox natively;
+            // toggling here too would flip it twice and leave it unchecked (= absent).
+            const tag = event.target.tagName.toLowerCase();
+            if (tag === 'input' || tag === 'select' || tag === 'textarea' || event.target.closest('button, label, select, input')) {
                 return;
             }
             const checkbox = document.getElementById('check-' + empId);

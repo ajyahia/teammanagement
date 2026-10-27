@@ -10,6 +10,7 @@ use App\Models\Expense;
 use App\Models\ProjectPayment;
 use App\Models\ProjectCycle;
 use App\Models\PartnerContribution;
+use App\Models\VendorPayment;
 
 class TreasuryController extends Controller
 {
@@ -35,6 +36,18 @@ class TreasuryController extends Controller
                 'type' => 'expense',
                 'amount' => (float) $e->amount,
                 'description' => __('Expense') . ': ' . $e->title,
+                'direction' => 'out'
+            ];
+        });
+
+        // Fetch Outgoing: Payments to external workers
+        $vendorPayments = VendorPayment::with('vendor.project.service')->where('status', 'paid')->get()->map(function($vp) {
+            $project = $vp->vendor?->project;
+            return [
+                'date' => $vp->paid_at ?? $vp->due_date,
+                'type' => 'vendor_payment',
+                'amount' => (float) $vp->amount,
+                'description' => __('External Worker Payment') . ' (' . ($vp->vendor?->name ?? '') . ' - ' . ($project?->service?->name ?? '') . ')' . ($vp->title ? ': ' . $vp->title : ''),
                 'direction' => 'out'
             ];
         });
@@ -88,6 +101,7 @@ class TreasuryController extends Controller
             ->concat($projectPayments)
             ->concat($projectCycles)
             ->concat($partnerContributions)
+            ->concat($vendorPayments)
             ->sortByDesc('date')
             ->values();
 

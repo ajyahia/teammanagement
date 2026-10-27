@@ -45,15 +45,22 @@ class ReportController extends Controller
         $totalMonthlyExpenses = Expense::whereMonth('expense_date', $month)->whereYear('expense_date', $year)->sum('amount');
         $totalAllTimeExpenses = Expense::sum('amount');
 
+        // Money paid out to external workers (subcontractors)
+        $paidVendors = \App\Models\VendorPayment::where('status', 'paid');
+        $totalMonthlyVendors = (clone $paidVendors)->whereMonth('paid_at', $month)->whereYear('paid_at', $year)->sum('amount');
+        $totalAllTimeVendors = (clone $paidVendors)->sum('amount');
+
         $financialSummary = [
             'monthly_revenue' => $totalMonthlyRevenue,
             'monthly_salaries' => $totalMonthlySalaries,
             'monthly_expenses' => $totalMonthlyExpenses,
-            'monthly_net_profit' => $totalMonthlyRevenue - $totalMonthlySalaries - $totalMonthlyExpenses,
+            'monthly_vendors' => $totalMonthlyVendors,
+            'monthly_net_profit' => $totalMonthlyRevenue - $totalMonthlySalaries - $totalMonthlyExpenses - $totalMonthlyVendors,
             'all_time_revenue' => $totalAllTimeRevenue,
             'all_time_salaries' => $totalAllTimeSalaries,
             'all_time_expenses' => $totalAllTimeExpenses,
-            'all_time_net_profit' => $totalAllTimeRevenue - $totalAllTimeSalaries - $totalAllTimeExpenses,
+            'all_time_vendors' => $totalAllTimeVendors,
+            'all_time_net_profit' => $totalAllTimeRevenue - $totalAllTimeSalaries - $totalAllTimeExpenses - $totalAllTimeVendors,
         ];
 
         return view('admin.reports.services', compact(

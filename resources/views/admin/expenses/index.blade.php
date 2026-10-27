@@ -30,45 +30,71 @@
     @endif
 
     {{-- Monthly / yearly summary --}}
-    <div class="card" style="margin-bottom: 24px;">
-        <form method="GET" action="{{ route('admin.expenses.index') }}" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 18px;">
-            <div class="form-group" style="margin-bottom: 0; min-width: 120px;">
-                <label class="form-label">{{ __('Year') }}</label>
-                <select name="year" class="form-control" onchange="this.form.submit()">
-                    @foreach($years as $y)
-                        <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group" style="margin-bottom: 0; min-width: 160px;">
-                <label class="form-label">{{ __('Month') }}</label>
-                <select name="month" class="form-control" onchange="this.form.submit()">
-                    <option value="">{{ __('All year') }}</option>
-                    @for($m = 1; $m <= 12; $m++)
-                        <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>{{ $m }} - {{ \Carbon\Carbon::create($year, $m, 1)->translatedFormat('F') }}</option>
-                    @endfor
-                </select>
-            </div>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-inline-start: auto;">
-                @if($month)
-                    <div style="padding: 12px 18px; border-radius: var(--radius-md); background: rgba(59,130,246,0.1);">
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ __('Spent in') }} {{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}</div>
-                        <div style="font-size: 1.3rem; font-weight: 700;">{{ number_format($monthTotal, 2) }}</div>
-                    </div>
-                @endif
-                <div style="padding: 12px 18px; border-radius: var(--radius-md); background: var(--bg-hover);">
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ __('Spent in year') }} {{ $year }}</div>
-                    <div style="font-size: 1.3rem; font-weight: 700;">{{ number_format($yearTotal, 2) }}</div>
-                </div>
-            </div>
-        </form>
+    @php $maxMonth = max($monthlyTotals) ?: 1; @endphp
+    <style>
+        .exp-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .exp-stat { padding: 16px 20px; border-radius: var(--radius-md); background: var(--bg-hover); border: 1px solid var(--border-color); }
+        .exp-stat.is-accent { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.35); }
+        .exp-stat .label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; }
+        .exp-stat .value { font-size: 1.6rem; font-weight: 800; font-family: var(--font-title); line-height: 1.2; }
+        .exp-filters { display: flex; gap: 12px; align-items: flex-end; }
+        .exp-filters .form-group { margin-bottom: 0; }
+        .exp-filters .form-control { min-width: 150px; }
+        .exp-months { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+        .exp-month { display: block; padding: 12px 14px; border-radius: var(--radius-md); text-decoration: none; color: inherit; border: 1px solid var(--border-color); transition: var(--transition); }
+        .exp-month:hover { background: var(--bg-hover); }
+        .exp-month.is-active { border-color: var(--color-primary); background: rgba(59,130,246,0.1); }
+        .exp-month .name { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .exp-month .amount { font-weight: 700; font-size: 1rem; }
+        .exp-month .amount.is-zero { color: var(--text-secondary); font-weight: 500; }
+        .exp-month .bar { height: 4px; border-radius: 2px; background: var(--border-color); margin-top: 8px; overflow: hidden; }
+        .exp-month .bar span { display: block; height: 100%; background: var(--color-primary); border-radius: 2px; }
+        @media (max-width: 1100px) { .exp-months { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        @media (max-width: 700px) { .exp-months { grid-template-columns: repeat(2, minmax(0, 1fr)); } .exp-filters { flex-wrap: wrap; } }
+    </style>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;">
+    <div class="card" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+            <form method="GET" action="{{ route('admin.expenses.index') }}" class="exp-filters">
+                <div class="form-group">
+                    <label class="form-label">{{ __('Year') }}</label>
+                    <select name="year" class="form-control" onchange="this.form.submit()">
+                        @foreach($years as $y)
+                            <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{{ __('Month') }}</label>
+                    <select name="month" class="form-control" onchange="this.form.submit()">
+                        <option value="">{{ __('All year') }}</option>
+                        @for($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>{{ \Carbon\Carbon::create($year, $m, 1)->translatedFormat('F') }}</option>
+                        @endfor
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="exp-summary">
+            <div class="exp-stat">
+                <div class="label">{{ __('Spent in year') }} {{ $year }}</div>
+                <div class="value">{{ number_format($yearTotal, 2) }}</div>
+            </div>
+            @if($month)
+                <div class="exp-stat is-accent">
+                    <div class="label">{{ __('Spent in') }} {{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}</div>
+                    <div class="value">{{ number_format($monthTotal, 2) }}</div>
+                </div>
+            @endif
+        </div>
+
+        <div class="exp-months">
             @foreach($monthlyTotals as $m => $total)
-                <a href="{{ route('admin.expenses.index', ['year' => $year, 'month' => $m]) }}"
-                   style="display: block; padding: 10px 12px; border-radius: var(--radius-md); text-decoration: none; color: inherit; border: 1px solid {{ $m == $month ? 'var(--color-primary)' : 'var(--border-color)' }}; background: {{ $m == $month ? 'rgba(59,130,246,0.08)' : 'transparent' }};">
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ \Carbon\Carbon::create($year, $m, 1)->translatedFormat('F') }}</div>
-                    <div style="font-weight: 700; {{ $total == 0 ? 'color: var(--text-secondary);' : '' }}">{{ number_format($total, 2) }}</div>
+                <a href="{{ route('admin.expenses.index', ['year' => $year, 'month' => $m]) }}" class="exp-month {{ $m == $month ? 'is-active' : '' }}">
+                    <div class="name">{{ \Carbon\Carbon::create($year, $m, 1)->translatedFormat('F') }}</div>
+                    <div class="amount {{ $total == 0 ? 'is-zero' : '' }}">{{ number_format($total, 2) }}</div>
+                    <div class="bar"><span style="width: {{ round($total / $maxMonth * 100) }}%;"></span></div>
                 </a>
             @endforeach
         </div>

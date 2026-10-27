@@ -337,6 +337,8 @@
         @endif
     </div>
 
+    @include('admin.projects._vendors', ['project' => $project])
+
     @include('admin.projects._partners', ['project' => $project])
 
     <!-- Edit Installment Modal -->

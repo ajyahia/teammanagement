@@ -113,6 +113,15 @@ Route::middleware('auth')->group(function () {
         Route::put('/payments/{payment}',[AdminProjectPaymentController::class, 'update'])->name('projects.payments.update');
         Route::delete('/payments/{payment}', [AdminProjectPaymentController::class, 'destroy'])->name('projects.payments.destroy');
 
+        // External workers (subcontractors) and what is paid to them
+        $vendors = \App\Http\Controllers\Admin\ProjectVendorController::class;
+        Route::post('/projects/{project}/vendors', [$vendors, 'store'])->name('projects.vendors.store');
+        Route::put('/vendors/{vendor}', [$vendors, 'update'])->name('projects.vendors.update');
+        Route::delete('/vendors/{vendor}', [$vendors, 'destroy'])->name('projects.vendors.destroy');
+        Route::post('/vendors/{vendor}/payments', [$vendors, 'storePayment'])->name('projects.vendors.payments.store');
+        Route::put('/vendor-payments/{payment}', [$vendors, 'updatePayment'])->name('projects.vendors.payments.update');
+        Route::delete('/vendor-payments/{payment}', [$vendors, 'destroyPayment'])->name('projects.vendors.payments.destroy');
+
         // Project Partners & their capital contributions
         $partners = \App\Http\Controllers\Admin\ProjectPartnerController::class;
         Route::post('/projects/{project}/partners', [$partners, 'store'])->name('projects.partners.store');

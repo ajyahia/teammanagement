@@ -64,6 +64,7 @@
                                         'project_payment' => 'badge-present',
                                         'project_cycle' => 'badge-present',
                                         'partner_contribution' => 'badge-present',
+                                        'vendor_payment' => 'badge-absent',
                                         default => 'badge-secondary'
                                     };
                                     $typeLabel = match($transaction['type']) {
@@ -72,6 +73,7 @@
                                         'project_payment' => __('Installment'),
                                         'project_cycle' => __('Subscription'),
                                         'partner_contribution' => __('Partner Contribution'),
+                                        'vendor_payment' => __('External Worker'),
                                         default => $transaction['type']
                                     };
                                 @endphp

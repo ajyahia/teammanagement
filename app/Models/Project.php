@@ -91,16 +91,27 @@ class Project extends Model
         return $this->hasMany(Expense::class);
     }
 
+    public function vendors()
+    {
+        return $this->hasMany(ProjectVendor::class);
+    }
+
+    /** Money already paid out to external workers on this project. */
+    public function getVendorPaidAttribute()
+    {
+        return (float) $this->vendors->sum(fn($v) => $v->paid_total);
+    }
+
     /** The owner keeps whatever percentage the partners don't hold. */
     public function getOwnerSharePercentAttribute()
     {
         return max(0, round(100 - (float) $this->partners->sum('share_percent'), 2));
     }
 
-    /** Realized profit: what clients actually paid minus expenses booked on this project. */
+    /** Realized profit: what clients paid minus project expenses and what was paid to external workers. */
     public function getNetProfitAttribute()
     {
-        return round((float) $this->total_paid - (float) $this->expenses->sum('amount'), 2);
+        return round((float) $this->total_paid - (float) $this->expenses->sum('amount') - $this->vendor_paid, 2);
     }
 
     public function getOwnerProfitShareAttribute()

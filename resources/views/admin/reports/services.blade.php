@@ -37,7 +37,7 @@
         <h4 style="margin-top: 0; font-weight: 600;"><i class="ri-information-line"></i> {{ __('How to read this report') }}</h4>
         <ul style="margin: 0; padding-inline-start: 20px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.9;">
             <li><strong>{{ __('Revenue') }}</strong>: {{ __('money actually received from clients, counted by payment date. Pending installments are not counted until they are marked as Paid.') }}</li>
-            <li><strong>{{ __('Net Profit') }}</strong> = {{ __('Revenue') }} − {{ __('Salaries Paid') }} − {{ __('Expenses') }}.</li>
+            <li><strong>{{ __('Net Profit') }}</strong> = {{ __('Revenue') }} − {{ __('Salaries Paid') }} − {{ __('Expenses') }} − {{ __('External Workers') }}.</li>
             <li>{{ __('The first card is for the selected month, the second is for everything since the start.') }}</li>
             <li>{{ __('The table below shows how much each service brought in.') }}</li>
         </ul>
@@ -62,6 +62,10 @@
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <span style="color: var(--text-secondary);">{{ __('Expenses') }}</span>
                     <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['monthly_expenses'], 2) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: var(--text-secondary);">{{ __('External Workers') }}</span>
+                    <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['monthly_vendors'], 2) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
                     <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-primary);">{{ __('Net Profit') }}</span>
@@ -89,6 +93,10 @@
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <span style="color: var(--text-secondary);">{{ __('Total Expenses') }}</span>
                     <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['all_time_expenses'], 2) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: var(--text-secondary);">{{ __('External Workers') }}</span>
+                    <span style="font-weight: bold; color: var(--red);">- {{ number_format($financialSummary['all_time_vendors'], 2) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
                     <span style="font-size: 1.1rem; font-weight: bold; color: var(--text-primary);">{{ __('Total Net Profit') }}</span>

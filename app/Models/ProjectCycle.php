@@ -20,6 +20,23 @@ class ProjectCycle extends Model
         'paid_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        // A new billing cycle also schedules the cost of every recurring external worker
+        static::created(function (ProjectCycle $cycle) {
+            $vendors = ProjectVendor::where('project_id', $cycle->project_id)->where('is_recurring', true)->get();
+            foreach ($vendors as $vendor) {
+                $vendor->payments()->create([
+                    'cycle_id' => $cycle->id,
+                    'title' => $cycle->billing_date->format('M Y'),
+                    'amount' => $vendor->agreed_cost,
+                    'due_date' => $cycle->billing_date->toDateString(),
+                    'status' => 'pending',
+                ]);
+            }
+        });
+    }
+
     public function project()
     {
         return $this->belongsTo(Project::class);

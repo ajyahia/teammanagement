@@ -211,14 +211,10 @@ class AdminAttendanceController extends Controller
         $employees = User::where('role', 'employee')->activeInMonth($month, $year)->get();
 
         // Map summaries for each employee
+        $service = app(\App\Services\AttendanceService::class);
         $summaries = [];
         foreach ($employees as $emp) {
-            $summaries[$emp->id] = [
-                'present' => AttendanceRecord::where('user_id', $emp->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'present')->count(),
-                'absent' => AttendanceRecord::where('user_id', $emp->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'absent')->count(),
-                'vacation' => AttendanceRecord::where('user_id', $emp->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'vacation')->count(),
-                'excused' => AttendanceRecord::where('user_id', $emp->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'excused')->count(),
-            ];
+            $summaries[$emp->id] = $service->summary($emp, (int) $month, (int) $year);
         }
 
         return view('admin.attendance.months', compact('employees', 'summaries', 'month', 'year'));
@@ -231,12 +227,7 @@ class AdminAttendanceController extends Controller
     {
         $weeks = $this->getWeeklyAttendance($employee->id, $month, $year);
         
-        $summary = [
-            'present' => AttendanceRecord::where('user_id', $employee->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'present')->count(),
-            'absent' => AttendanceRecord::where('user_id', $employee->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'absent')->count(),
-            'vacation' => AttendanceRecord::where('user_id', $employee->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'vacation')->count(),
-            'excused' => AttendanceRecord::where('user_id', $employee->id)->whereMonth('date', $month)->whereYear('date', $year)->where('status', 'excused')->count(),
-        ];
+        $summary = app(\App\Services\AttendanceService::class)->summary($employee, (int) $month, (int) $year);
 
         return view('admin.attendance.details', compact('employee', 'weeks', 'summary', 'month', 'year'));
     }
@@ -246,6 +237,9 @@ class AdminAttendanceController extends Controller
      */
     private function getWeeklyAttendance($userId, $month, $year)
     {
+        $service = app(\App\Services\AttendanceService::class);
+        $user = User::findOrFail($userId);
+        $serviceHolidays = $service->holidays((int) $month, (int) $year);
         $records = AttendanceRecord::where('user_id', $userId)
             ->whereMonth('date', $month)
             ->whereYear('date', $year)
@@ -290,7 +284,7 @@ class AdminAttendanceController extends Controller
                     $week['days'][$wIndex] = [
                         'date' => $dateStr,
                         'day_num' => date('d', $current),
-                        'status' => $record ? $record->status : 'none',
+                        'status' => $record ? $record->status : ($service->isImpliedPresent($user, $dateStr, $serviceHolidays) ? 'present' : 'none'),
                         'notes' => $record ? $record->notes : '',
                         'is_holiday' => $isHoliday
                     ];
