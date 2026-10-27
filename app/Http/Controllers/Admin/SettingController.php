@@ -22,3 +22,4 @@ class SettingController extends Controller
         \App\Models\Setting::setVal('company_budget', $request->company_budget);
         return redirect()->route('admin.settings.index')->with('success', 'Settings updated successfully.');
     }
+}
