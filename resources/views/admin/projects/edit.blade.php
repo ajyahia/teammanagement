@@ -214,6 +214,26 @@
             </button>
         </form>
 
+        @if(!in_array($project->billing_type, ['monthly', 'yearly']))
+            @if($errors->has('installment_amount'))
+                <div class="project-form-errors" style="margin-bottom: 12px;">{{ $errors->first('installment_amount') }}</div>
+            @endif
+            <form action="{{ route('admin.projects.payments.generate', $project->id) }}" method="POST" style="display: flex; gap: 15px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap; padding: 14px; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+                @csrf
+                <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                    <label class="form-label" title="{{ __('The unscheduled balance is split into monthly pending installments of this amount.') }}">{{ __('Monthly Installment') }} <i class="ri-information-line"></i></label>
+                    <input type="number" step="0.01" min="0.01" name="installment_amount" class="form-control" required>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                    <label class="form-label">{{ __('First Due Date') }}</label>
+                    <input type="date" name="first_due_date" class="form-control" required value="{{ date('Y-m-d', strtotime('+1 month')) }}">
+                </div>
+                <button type="submit" class="btn btn-secondary" style="height: 48px;">
+                    <i class="ri-calendar-schedule-line"></i> {{ __('Generate Installments') }}
+                </button>
+            </form>
+        @endif
+
         @if($project->payments->count() > 0)
             <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: var(--radius-md);">
                 <table class="data-table" style="margin: 0; width: 100%;">
@@ -316,6 +336,8 @@
             </div>
         @endif
     </div>
+
+    @include('admin.projects._partners', ['project' => $project])
 
     <!-- Edit Installment Modal -->
     <div id="paymentEditModal" class="custom-modal-overlay" style="display: none;">

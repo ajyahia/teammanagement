@@ -18,6 +18,15 @@
                 <input type="text" name="title" class="form-control" value="{{ $expense->title }}" required>
             </div>
             <div class="form-group" style="margin-top: 15px;">
+                <label>{{ __('Project (Optional)') }}</label>
+                <select name="project_id" class="form-control">
+                    <option value="">-- {{ __('General company expense') }} --</option>
+                    @foreach($projects as $p)
+                        <option value="{{ $p->id }}" {{ old('project_id', $expense->project_id) == $p->id ? 'selected' : '' }}>#{{ $p->id }} {{ $p->client?->name }} - {{ $p->service?->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
                 <label>{{ __('Amount') }}</label>
                 <input type="number" step="0.01" name="amount" class="form-control" value="{{ $expense->amount }}" required>
             </div>

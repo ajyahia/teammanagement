@@ -109,8 +109,18 @@ Route::middleware('auth')->group(function () {
         
         // Project Payments
         Route::post('/projects/{project}/payments', [AdminProjectPaymentController::class, 'store'])->name('projects.payments.store');
-        Route::put('/payments/{payment}', [AdminProjectPaymentController::class, 'update'])->name('projects.payments.update');
+        Route::post('/projects/{project}/payments/generate', [AdminProjectPaymentController::class, 'generate'])->name('projects.payments.generate');
+        Route::put('/payments/{payment}',[AdminProjectPaymentController::class, 'update'])->name('projects.payments.update');
         Route::delete('/payments/{payment}', [AdminProjectPaymentController::class, 'destroy'])->name('projects.payments.destroy');
+
+        // Project Partners & their capital contributions
+        $partners = \App\Http\Controllers\Admin\ProjectPartnerController::class;
+        Route::post('/projects/{project}/partners', [$partners, 'store'])->name('projects.partners.store');
+        Route::put('/partners/{partner}', [$partners, 'update'])->name('projects.partners.update');
+        Route::delete('/partners/{partner}', [$partners, 'destroy'])->name('projects.partners.destroy');
+        Route::post('/partners/{partner}/contributions', [$partners, 'storeContribution'])->name('projects.partners.contributions.store');
+        Route::put('/contributions/{contribution}', [$partners, 'updateContribution'])->name('projects.partners.contributions.update');
+        Route::delete('/contributions/{contribution}', [$partners, 'destroyContribution'])->name('projects.partners.contributions.destroy');
 
         // Project Cycles
         Route::post('/projects/cycles/generate', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'generateAll'])->name('projects.cycles.generate_all');

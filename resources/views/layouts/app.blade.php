@@ -128,7 +128,7 @@
 
                 <div class="topbar-right">
                     <!-- Language Switcher Toggle -->
-                    <div class="language-switcher">
+                    <!-- <div class="language-switcher">
                         @if(app()->getLocale() === 'en')
                             <a href="{{ route('lang.switch', 'ar') }}" class="lang-btn">
                                 <i class="ri-global-line"></i>
@@ -140,7 +140,7 @@
                                 <span>English</span>
                             </a>
                         @endif
-                    </div>
+                    </div> -->
 
                     @if(auth()->guard('client')->check())
                         <div class="user-dropdown-container" style="position: relative;"

@@ -81,6 +81,33 @@ class Project extends Model
         return max(0, (float) $this->total_revenue - (float) $this->total_paid);
     }
 
+    public function partners()
+    {
+        return $this->hasMany(ProjectPartner::class);
+    }
+
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    /** The owner keeps whatever percentage the partners don't hold. */
+    public function getOwnerSharePercentAttribute()
+    {
+        return max(0, round(100 - (float) $this->partners->sum('share_percent'), 2));
+    }
+
+    /** Realized profit: what clients actually paid minus expenses booked on this project. */
+    public function getNetProfitAttribute()
+    {
+        return round((float) $this->total_paid - (float) $this->expenses->sum('amount'), 2);
+    }
+
+    public function getOwnerProfitShareAttribute()
+    {
+        return round($this->net_profit * $this->owner_share_percent / 100, 2);
+    }
+
     public function payments()
     {
         return $this->hasMany(ProjectPayment::class);

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Expense extends Model
 {
     protected $fillable = [
+        'project_id',
         'title',
         'amount',
         'expense_date',
@@ -17,4 +18,9 @@ class Expense extends Model
         'amount' => 'decimal:2',
         'expense_date' => 'date',
     ];
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
 }

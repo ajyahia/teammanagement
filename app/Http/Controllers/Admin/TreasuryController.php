@@ -9,6 +9,7 @@ use App\Models\SalaryPayment;
 use App\Models\Expense;
 use App\Models\ProjectPayment;
 use App\Models\ProjectCycle;
+use App\Models\PartnerContribution;
 
 class TreasuryController extends Controller
 {
@@ -30,11 +31,23 @@ class TreasuryController extends Controller
         // Fetch Outgoing: Expenses
         $expenses = Expense::all()->map(function($e) {
             return [
-                'date' => $e->date ?? $e->created_at,
+                'date' => $e->expense_date ?? $e->created_at,
                 'type' => 'expense',
-                'amount' => $e->amount,
-                'description' => __('Expense') . ': ' . $e->name,
+                'amount' => (float) $e->amount,
+                'description' => __('Expense') . ': ' . $e->title,
                 'direction' => 'out'
+            ];
+        });
+
+        // Fetch Incoming: Partner capital contributions
+        $partnerContributions = PartnerContribution::with('partner.project.service')->where('status', 'paid')->get()->map(function($pc) {
+            $project = $pc->partner?->project;
+            return [
+                'date' => $pc->paid_at ?? $pc->due_date,
+                'type' => 'partner_contribution',
+                'amount' => (float) $pc->amount,
+                'description' => __('Partner Contribution') . ' (' . ($pc->partner?->name ?? '') . ' - ' . ($project?->service?->name ?? '') . ')',
+                'direction' => 'in'
             ];
         });
 
@@ -74,6 +87,7 @@ class TreasuryController extends Controller
             ->concat($expenses)
             ->concat($projectPayments)
             ->concat($projectCycles)
+            ->concat($partnerContributions)
             ->sortByDesc('date')
             ->values();
 
