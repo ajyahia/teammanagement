@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
+    // The settings table has no `id` column; `key` is the unique identifier.
+    protected $primaryKey = 'key';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = ['key', 'value'];
 
     /**
