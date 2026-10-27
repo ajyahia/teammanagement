@@ -15,7 +15,7 @@ class AdminAttendanceController extends Controller
     public function index(Request $request)
     {
         $date = $request->input('date', date('Y-m-d'));
-        $employees = User::where('role', 'employee')->get();
+        $employees = User::where('role', 'employee')->activeOn($date)->get();
         
         // Fetch all attendance records for this date, keyed by user_id
         $attendanceRecords = AttendanceRecord::where('date', $date)
@@ -62,6 +62,10 @@ class AdminAttendanceController extends Controller
             return redirect()->back()->with('error', __('Cannot mark attendance on a holiday.'));
         }
 
+        if (!User::find($validatedData['user_id'])->isActive($date)) {
+            return redirect()->back()->with('error', __('This employee is deactivated on this date.'));
+        }
+
         $attendance = AttendanceRecord::updateOrCreate(
             [
                 'user_id' => $validatedData['user_id'],
@@ -75,7 +79,74 @@ class AdminAttendanceController extends Controller
         );
 
         return redirect()->route('admin.attendance.index', ['date' => $validatedData['date']])
-            ->with('success', 'Attendance record saved successfully.');
+            ->with('success', __('Attendance record saved successfully.'));
+    }
+
+    /**
+     * Bulk save attendance via checkboxes: checked employees are present, unchecked are absent.
+     */
+    public function bulkStore(Request $request)
+    {
+        $validatedData = $request->validate([
+            'date' => ['required', 'date'],
+            'present_ids' => ['nullable', 'array'],
+            'present_ids.*' => ['exists:users,id'],
+            'statuses' => ['nullable', 'array'],
+            'notes' => ['nullable', 'array'],
+        ]);
+
+        $date = $validatedData['date'];
+
+        // Holiday Check
+        $dayOfWeek = (int) date('w', strtotime($date));
+        $weeklyHolidays = json_decode(\App\Models\Setting::getVal('weekly_holidays', '[]'), true) ?? [];
+        $isHoliday = in_array($dayOfWeek, $weeklyHolidays) || \App\Models\SpecificHoliday::where('date', $date)->exists();
+
+        if ($isHoliday) {
+            return redirect()->back()->with('error', __('Cannot mark attendance on a holiday.'));
+        }
+
+        $employees = User::where('role', 'employee')->activeOn($date)->get();
+        $presentIds = collect($request->input('present_ids', []))->map(fn($id) => (int)$id)->all();
+        $customStatuses = $request->input('statuses', []);
+        $notes = $request->input('notes', []);
+
+        $presentCount = 0;
+        $absentCount = 0;
+
+        foreach ($employees as $emp) {
+            $empId = $emp->id;
+            $note = !empty($notes[$empId]) ? $notes[$empId] : null;
+
+            // If an explicit override (vacation or excused) is selected:
+            if (!empty($customStatuses[$empId]) && in_array($customStatuses[$empId], ['vacation', 'excused'])) {
+                $status = $customStatuses[$empId];
+            } elseif (in_array($empId, $presentIds)) {
+                $status = 'present';
+                $presentCount++;
+            } else {
+                $status = 'absent';
+                $absentCount++;
+            }
+
+            AttendanceRecord::updateOrCreate(
+                [
+                    'user_id' => $empId,
+                    'date' => $date,
+                ],
+                [
+                    'status' => $status,
+                    'notes' => $note,
+                    'created_by' => auth()->id(),
+                ]
+            );
+        }
+
+        return redirect()->route('admin.attendance.index', ['date' => $date])
+            ->with('success', __('Attendance saved successfully (:present Present, :absent Absent).', [
+                'present' => $presentCount,
+                'absent' => $absentCount
+            ]));
     }
 
     /**
@@ -98,7 +169,7 @@ class AdminAttendanceController extends Controller
             return redirect()->back()->with('error', __('Cannot mark attendance on a holiday.'));
         }
 
-        $employees = User::where('role', 'employee')->get();
+        $employees = User::where('role', 'employee')->activeOn($date)->get();
 
         foreach ($employees as $emp) {
             AttendanceRecord::updateOrCreate(
@@ -136,9 +207,9 @@ class AdminAttendanceController extends Controller
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
-        
-        $employees = User::where('role', 'employee')->get();
-        
+
+        $employees = User::where('role', 'employee')->activeInMonth($month, $year)->get();
+
         // Map summaries for each employee
         $summaries = [];
         foreach ($employees as $emp) {

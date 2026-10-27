@@ -113,4 +113,33 @@ class AdminUserController extends Controller
         $employee->delete();
         return redirect()->route('admin.employees.index')->with('success', 'Employee deleted successfully.');
     }
+
+    /**
+     * Deactivate the employee starting from the given date.
+     * From that date on they no longer appear in attendance or salaries; past history is kept.
+     */
+    public function deactivate(Request $request, User $employee)
+    {
+        if ($employee->id === auth()->id()) {
+            return redirect()->route('admin.employees.index')->with('error', 'You cannot deactivate yourself.');
+        }
+
+        $validatedData = $request->validate([
+            'deactivated_at' => ['required', 'date'],
+        ]);
+
+        $employee->update(['deactivated_at' => $validatedData['deactivated_at']]);
+
+        return redirect()->route('admin.employees.index')->with('success', __('Employee deactivated successfully.'));
+    }
+
+    /**
+     * Reactivate a previously deactivated employee.
+     */
+    public function activate(User $employee)
+    {
+        $employee->update(['deactivated_at' => null]);
+
+        return redirect()->route('admin.employees.index')->with('success', __('Employee reactivated successfully.'));
+    }
 }

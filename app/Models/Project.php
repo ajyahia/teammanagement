@@ -54,23 +54,31 @@ class Project extends Model
     public function getTotalRevenueAttribute()
     {
         if (in_array($this->billing_type, ['monthly', 'yearly'])) {
-            return $this->cycles->sum('amount');
+            return (float) $this->cycles->sum('amount');
         }
-        return $this->agreed_price;
+        return (float) $this->agreed_price;
     }
 
     public function getTotalPaidAttribute()
     {
         if (in_array($this->billing_type, ['monthly', 'yearly'])) {
-            return $this->cycles->where('is_paid', true)->sum('amount');
+            $paidPayments = (float) $this->payments->where('status', 'paid')->sum('amount');
+            $directCyclesPaid = 0;
+            foreach ($this->cycles as $cycle) {
+                if ($cycle->is_paid && $cycle->payments->isEmpty()) {
+                    $directCyclesPaid += (float) $cycle->amount;
+                }
+            }
+            return $paidPayments + $directCyclesPaid;
         }
+
         // Incorporate both legacy paid_amount and new project payments
-        return $this->payments->where('status', 'paid')->sum('amount') + $this->paid_amount;
+        return (float) $this->payments->where('status', 'paid')->sum('amount') + (float) $this->paid_amount;
     }
 
     public function getDueAmountAttribute()
     {
-        return $this->total_revenue - $this->total_paid;
+        return max(0, (float) $this->total_revenue - (float) $this->total_paid);
     }
 
     public function payments()

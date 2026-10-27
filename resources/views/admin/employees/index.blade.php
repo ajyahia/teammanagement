@@ -38,6 +38,11 @@
                                         {{ strtoupper(substr($emp->name, 0, 1)) }}
                                     </div>
                                     <strong>{{ $emp->name }}</strong>
+                                    @if($emp->deactivated_at)
+                                        <span class="badge {{ $emp->isActive() ? 'badge-vacation' : 'badge-absent' }}" style="font-size: 0.75rem; padding: 2px 6px;">
+                                            {{ $emp->isActive() ? __('Stops on') : __('Deactivated since') }} {{ $emp->deactivated_at->format('Y-m-d') }}
+                                        </span>
+                                    @endif
                                 </div>
                             </td>
                             <td><code style="color: var(--color-primary-light);">{{ $emp->username }}</code></td>
@@ -63,6 +68,19 @@
                                     <a href="/admin/employees/{{ $emp->id }}/edit" class="btn btn-secondary btn-icon" title="{{ __('Edit Profile') }}">
                                         <i class="ri-pencil-fill"></i>
                                     </a>
+                                    @if($emp->deactivated_at)
+                                        <form action="/admin/employees/{{ $emp->id }}/activate" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-secondary btn-icon" style="color: var(--teal);" title="{{ __('Reactivate Employee') }}">
+                                                <i class="ri-play-circle-fill"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button type="button" class="btn btn-secondary btn-icon" style="color: var(--yellow);" onclick="showDeactivatePopup('{{ $emp->id }}', @js($emp->name))" title="{{ __('Deactivate Employee') }}">
+                                            <i class="ri-pause-circle-fill"></i>
+                                        </button>
+                                    @endif
                                     <form action="/admin/employees/{{ $emp->id }}" method="POST" id="delete-form-{{ $emp->id }}" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
@@ -90,6 +108,29 @@
                 {{ $employees->links() }}
             </div>
         @endif
+    </div>
+
+    <!-- Deactivate Employee Modal -->
+    <div id="deactivateModal" class="custom-modal-overlay" style="display: none;">
+        <div class="custom-modal">
+            <div class="modal-icon" style="background: rgba(255, 199, 60, 0.1); color: var(--yellow);">
+                <i class="ri-pause-circle-line"></i>
+            </div>
+            <h4 class="modal-title">{{ __('Deactivate Employee') }}: <span id="deactivateEmpName"></span></h4>
+            <p class="modal-text">{{ __('From this date on, the employee will no longer appear in attendance or salaries. Past months are kept.') }}</p>
+            <form id="deactivateForm" method="POST">
+                @csrf
+                @method('PATCH')
+                <div class="form-group" style="text-align: start; margin-bottom: 20px;">
+                    <label for="deactivated_at">{{ __('Stop Date') }}</label>
+                    <input type="date" id="deactivated_at" name="deactivated_at" class="form-control" value="{{ date('Y-m-d') }}" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeDeactivatePopup()">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-danger">{{ __('Deactivate') }}</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Custom Confirm Modal -->
@@ -181,6 +222,16 @@
         formToSubmitId = 'delete-form-' + empId;
         const modal = document.getElementById('confirmModal');
         modal.style.display = 'flex';
+    }
+
+    function showDeactivatePopup(empId, empName) {
+        document.getElementById('deactivateForm').action = '/admin/employees/' + empId + '/deactivate';
+        document.getElementById('deactivateEmpName').textContent = empName;
+        document.getElementById('deactivateModal').style.display = 'flex';
+    }
+
+    function closeDeactivatePopup() {
+        document.getElementById('deactivateModal').style.display = 'none';
     }
 
     function closeConfirmPopup() {

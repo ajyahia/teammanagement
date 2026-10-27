@@ -25,16 +25,18 @@ class ReportController extends Controller
             $monthlyRevenue = 0;
 
             foreach ($allProjects as $project) {
-                if (in_array($project->billing_type, ['one_time', 'per_page'])) {
-                    $paidPayments = $project->payments()->where('status', 'paid')->get();
-                    $allTimeRevenue += $paidPayments->sum('amount');
-                    $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
-                        return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
-                    })->sum('amount');
-                } else {
-                    $paidCycles = $project->cycles()->where('is_paid', true)->get();
-                    $allTimeRevenue += $paidCycles->sum('amount');
-                    $monthlyRevenue += $paidCycles->filter(function ($c) use ($month, $year) {
+                // All recorded payments for this project
+                $paidPayments = $project->payments()->where('status', 'paid')->get();
+                $allTimeRevenue += $paidPayments->sum('amount');
+                $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
+                    return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
+                })->sum('amount');
+
+                // Legacy direct cycles without payment records
+                if (in_array($project->billing_type, ['monthly', 'yearly'])) {
+                    $directCycles = $project->cycles()->where('is_paid', true)->whereDoesntHave('payments')->get();
+                    $allTimeRevenue += $directCycles->sum('amount');
+                    $monthlyRevenue += $directCycles->filter(function ($c) use ($month, $year) {
                         return $c->paid_at && $c->paid_at->format('m-Y') === "{$month}-{$year}";
                     })->sum('amount');
                 }
@@ -85,16 +87,18 @@ class ReportController extends Controller
             $monthlyRevenue = 0;
 
             foreach ($allProjects as $project) {
-                if (in_array($project->billing_type, ['one_time', 'per_page'])) {
-                    $paidPayments = $project->payments()->where('status', 'paid')->get();
-                    $allTimeRevenue += $paidPayments->sum('amount');
-                    $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
-                        return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
-                    })->sum('amount');
-                } else {
-                    $paidCycles = $project->cycles()->where('is_paid', true)->get();
-                    $allTimeRevenue += $paidCycles->sum('amount');
-                    $monthlyRevenue += $paidCycles->filter(function ($c) use ($month, $year) {
+                // All recorded payments for this project
+                $paidPayments = $project->payments()->where('status', 'paid')->get();
+                $allTimeRevenue += $paidPayments->sum('amount');
+                $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
+                    return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
+                })->sum('amount');
+
+                // Legacy direct cycles without payment records
+                if (in_array($project->billing_type, ['monthly', 'yearly'])) {
+                    $directCycles = $project->cycles()->where('is_paid', true)->whereDoesntHave('payments')->get();
+                    $allTimeRevenue += $directCycles->sum('amount');
+                    $monthlyRevenue += $directCycles->filter(function ($c) use ($month, $year) {
                         return $c->paid_at && $c->paid_at->format('m-Y') === "{$month}-{$year}";
                     })->sum('amount');
                 }

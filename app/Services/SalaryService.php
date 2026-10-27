@@ -51,7 +51,7 @@ class SalaryService
         $month = sprintf('%02d', $month);
         $expectedWorkingDays = $this->calculateExpectedWorkingDays($month, $year);
 
-        $employees = User::where('role', 'employee')->orderBy('name', 'asc')->get();
+        $employees = User::where('role', 'employee')->activeInMonth($month, $year)->orderBy('name', 'asc')->get();
         $allAdjustments = SalaryAdjustment::where('month', (int)$month)->where('year', (int)$year)->get()->groupBy('user_id');
         $absentRecords = AttendanceRecord::whereYear('date', $year)->whereMonth('date', $month)->where('status', 'absent')->get()->groupBy('user_id');
         $allPayments = SalaryPayment::where('month', (int)$month)->where('year', (int)$year)->get()->groupBy('user_id');

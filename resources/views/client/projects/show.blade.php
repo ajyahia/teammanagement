@@ -45,11 +45,25 @@
                 </div>
             </div>
             
-            <div style="text-align: right; background: rgba(255,255,255,0.02); padding: 15px 25px; border-radius: 10px; border: 1px solid var(--border-color);">
-                <span style="display: block; color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 5px;">{{ __('Agreed Price') }}</span>
-                <span style="font-size: 1.5rem; font-weight: bold; font-family: var(--font-title); color: var(--text-main);">
-                    {{ number_format($project->agreed_price, 2) }}
-                </span>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="text-align: center; background: rgba(255,255,255,0.02); padding: 12px 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+                    <span style="display: block; color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 3px;">{{ in_array($project->billing_type, ['monthly', 'yearly']) ? __('Total Invoiced') : __('Agreed Price') }}</span>
+                    <span style="font-size: 1.25rem; font-weight: bold; font-family: var(--font-title); color: var(--text-main);">
+                        {{ number_format($project->total_revenue, 2) }}
+                    </span>
+                </div>
+                <div style="text-align: center; background: rgba(34,197,94,0.05); padding: 12px 20px; border-radius: 10px; border: 1px solid rgba(34,197,94,0.2);">
+                    <span style="display: block; color: #22c55e; font-size: 0.8rem; margin-bottom: 3px;">{{ __('Total Paid') }}</span>
+                    <span style="font-size: 1.25rem; font-weight: bold; font-family: var(--font-title); color: #22c55e;">
+                        {{ number_format($project->total_paid, 2) }}
+                    </span>
+                </div>
+                <div style="text-align: center; background: rgba(239,68,68,0.05); padding: 12px 20px; border-radius: 10px; border: 1px solid rgba(239,68,68,0.2);">
+                    <span style="display: block; color: #ef4444; font-size: 0.8rem; margin-bottom: 3px;">{{ __('Remaining Due') }}</span>
+                    <span style="font-size: 1.25rem; font-weight: bold; font-family: var(--font-title); color: #ef4444;">
+                        {{ number_format($project->due_amount, 2) }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -67,8 +81,57 @@
         </div>
     </div>
 
+    @if(in_array($project->billing_type, ['monthly', 'yearly']) && $project->cycles->count() > 0)
+    <!-- Subscription Cycles Breakdown -->
+    <h3 style="margin: 0 0 15px; font-family: var(--font-title); font-weight: 700;">
+        <i class="ri-calendar-event-line" style="color: var(--color-primary); margin-right: 6px;"></i>
+        {{ __('Subscription Billing Cycles') }}
+    </h3>
+    <div class="card" style="margin-bottom: 24px;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ __('Cycle') }}</th>
+                        <th>{{ __('Amount') }}</th>
+                        <th>{{ __('Paid') }}</th>
+                        <th>{{ __('Due') }}</th>
+                        <th>{{ __('Status') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($project->cycles()->orderBy('billing_date', 'desc')->get() as $cycle)
+                        @php $status = $cycle->payment_status; @endphp
+                        <tr>
+                            <td>
+                                <strong>{{ $cycle->billing_date->format('M Y') }}</strong>
+                                <span style="display:block; font-size: 0.8rem; color: var(--text-secondary);">{{ $cycle->billing_date->format('Y-m-d') }}</span>
+                            </td>
+                            <td><strong>{{ number_format($cycle->amount, 2) }}</strong></td>
+                            <td style="color: #22c55e; font-weight: 600;">{{ number_format($cycle->total_paid, 2) }}</td>
+                            <td style="color: #ef4444; font-weight: 600;">{{ number_format($cycle->due_amount, 2) }}</td>
+                            <td>
+                                @if($status === 'paid')
+                                    <span class="badge badge-present"><i class="ri-check-line"></i> {{ __('Paid in Full') }}</span>
+                                @elseif($status === 'partial')
+                                    <span class="badge badge-vacation"><i class="ri-pie-chart-line"></i> {{ __('Partially Paid') }}</span>
+                                @else
+                                    <span class="badge badge-absent"><i class="ri-close-line"></i> {{ __('Unpaid') }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
     <!-- Payments / Installments -->
-    <h3 style="margin: 0 0 15px; font-family: var(--font-title); font-weight: 700;">{{ __('Payments & Installments') }}</h3>
+    <h3 style="margin: 0 0 15px; font-family: var(--font-title); font-weight: 700;">
+        <i class="ri-bank-card-line" style="color: var(--color-primary); margin-right: 6px;"></i>
+        {{ __('Payments & Installments') }}
+    </h3>
     
     <div class="card">
         @if($project->payments->count() > 0)
@@ -77,6 +140,9 @@
                     <thead>
                         <tr>
                             <th>{{ __('Title / Description') }}</th>
+                            @if(in_array($project->billing_type, ['monthly', 'yearly']))
+                                <th>{{ __('Cycle') }}</th>
+                            @endif
                             <th>{{ __('Amount') }}</th>
                             <th>{{ __('Due Date') }}</th>
                             <th>{{ __('Status') }}</th>
@@ -84,9 +150,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($project->payments as $payment)
+                        @foreach($project->payments()->orderBy('due_date', 'desc')->get() as $payment)
                             <tr>
-                                <td>{{ $payment->title }}</td>
+                                <td>
+                                    <strong>{{ $payment->title }}</strong>
+                                    @if($payment->notes)
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ $payment->notes }}</div>
+                                    @endif
+                                </td>
+                                @if(in_array($project->billing_type, ['monthly', 'yearly']))
+                                    <td>
+                                        @if($payment->cycle)
+                                            <span class="badge badge-vacation">{{ $payment->cycle->billing_date->format('M Y') }}</span>
+                                        @else
+                                            <span style="color: var(--text-secondary);">-</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td><strong>{{ number_format($payment->amount, 2) }}</strong></td>
                                 <td>{{ $payment->due_date->format('Y-m-d') }}</td>
                                 <td>

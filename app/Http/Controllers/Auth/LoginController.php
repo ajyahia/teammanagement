@@ -31,6 +31,17 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+
+            if (!$user->isActive()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                throw ValidationException::withMessages([
+                    'username' => __('This account has been deactivated.'),
+                ]);
+            }
+
             if ($user->role === 'admin') {
                 return redirect()->intended('/admin/dashboard');
             }

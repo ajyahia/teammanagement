@@ -68,10 +68,13 @@ Route::middleware('auth')->group(function () {
 
         // Employee Management (CRUD)
         Route::resource('employees', AdminUserController::class)->except(['show']);
+        Route::patch('/employees/{employee}/deactivate', [AdminUserController::class, 'deactivate'])->name('employees.deactivate');
+        Route::patch('/employees/{employee}/activate', [AdminUserController::class, 'activate'])->name('employees.activate');
         
         // Attendance Management
         Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('attendance.index');
         Route::post('/attendance', [AdminAttendanceController::class, 'store'])->name('attendance.store');
+        Route::post('/attendance/bulk', [AdminAttendanceController::class, 'bulkStore'])->name('attendance.bulk_store');
         Route::post('/attendance/mark-all-present', [AdminAttendanceController::class, 'markAllPresent'])->name('attendance.mark_all_present');
         Route::delete('/attendance/{attendance}', [AdminAttendanceController::class, 'destroy'])->name('attendance.destroy');
         Route::get('/attendance/months', [AdminAttendanceController::class, 'months'])->name('attendance.months');
@@ -112,6 +115,7 @@ Route::middleware('auth')->group(function () {
         // Project Cycles
         Route::post('/projects/cycles/generate', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'generateAll'])->name('projects.cycles.generate_all');
         Route::post('/projects/{project}/cycles', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'store'])->name('projects.cycles.store');
+        Route::put('/cycles/{cycle}', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'update'])->name('projects.cycles.update');
         Route::patch('/cycles/{cycle}/toggle-paid', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'togglePaid'])->name('projects.cycles.toggle_paid');
         Route::delete('/cycles/{cycle}', [\App\Http\Controllers\Admin\ProjectCycleController::class, 'destroy'])->name('projects.cycles.destroy');
 

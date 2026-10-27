@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard') - Team Management System</title>
-    
+
     <!-- Remix Icons CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
-    
+
     <!-- Custom Style Sheet -->
     <link rel="stylesheet" href="/css/style.css">
-    
+
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    
+
     @yield('styles')
-    
+
     <style>
         /* Select2 Dark Theme Customization */
         .select2-container--default .select2-selection--multiple {
@@ -25,9 +26,11 @@
             min-height: 45px;
             padding: 5px 10px;
         }
+
         .select2-container--default.select2-container--focus .select2-selection--multiple {
             border-color: var(--color-primary, #009efd);
         }
+
         .select2-container--default .select2-selection--multiple .select2-selection__choice {
             background-color: rgba(0, 158, 253, 0.1);
             border: 1px solid rgba(0, 158, 253, 0.2);
@@ -36,16 +39,19 @@
             padding: 4px 8px;
             margin-top: 4px;
         }
+
         .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
             color: var(--color-primary, #009efd);
             margin-right: 8px;
             border-right: 1px solid rgba(0, 158, 253, 0.2);
             padding-right: 8px;
         }
+
         .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
             background-color: transparent;
             color: #f1416c;
         }
+
         .select2-dropdown {
             background-color: var(--bg-card, #1e1e2d);
             border: 1px solid var(--border-color, #2b2b40);
@@ -53,42 +59,49 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             color: var(--text-main, #fff);
         }
+
         .select2-container--default .select2-search--dropdown .select2-search__field {
             background-color: var(--bg-main, #151521);
             border: 1px solid var(--border-color, #2b2b40);
             color: var(--text-main, #fff);
             border-radius: 6px;
         }
+
         .select2-container--default .select2-results__option--selected {
             background-color: rgba(0, 158, 253, 0.1);
         }
+
         .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
             background-color: var(--color-primary, #009efd);
             color: white;
         }
+
         .select2-container--default .select2-results__option[aria-disabled=true] {
             color: var(--text-secondary, #92929f);
             opacity: 0.5;
-            display: none; /* Hide disabled options to mimic exact filtering */
+            display: none;
+            /* Hide disabled options to mimic exact filtering */
         }
     </style>
 </head>
+
 <body dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <div class="app-container">
-        
+
         <!-- Sidebar -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-brand">
                 <i class="ri-team-fill"></i>
                 <span>{{ __('Team Manage') }}</span>
             </div>
-            
+
             <ul class="sidebar-menu">
                 @yield('sidebar_menu')
             </ul>
-            
+
             <div class="sidebar-footer">
-                <form action="{{ auth()->guard('client')->check() ? route('client.logout') : route('logout') }}" method="POST" class="logout-form">
+                <form action="{{ auth()->guard('client')->check() ? route('client.logout') : route('logout') }}"
+                    method="POST" class="logout-form">
                     @csrf
                     <button type="submit">
                         <i class="ri-logout-box-r-line"></i>
@@ -97,10 +110,10 @@
                 </form>
             </div>
         </aside>
-        
+
         <!-- Main Wrapper -->
         <div class="main-wrapper">
-            
+
             <!-- Topbar / Header -->
             <header class="topbar">
                 <div class="topbar-left">
@@ -112,7 +125,7 @@
                         <h1>@yield('page_header', 'Dashboard')</h1>
                     </div>
                 </div>
-                
+
                 <div class="topbar-right">
                     <!-- Language Switcher Toggle -->
                     <div class="language-switcher">
@@ -130,33 +143,50 @@
                     </div>
 
                     @if(auth()->guard('client')->check())
-                        <div class="user-dropdown-container" style="position: relative;" onmouseover="document.getElementById('client-dropdown-menu').style.display='block'" onmouseout="document.getElementById('client-dropdown-menu').style.display='none'">
+                        <div class="user-dropdown-container" style="position: relative;"
+                            onmouseover="document.getElementById('client-dropdown-menu').style.display='block'"
+                            onmouseout="document.getElementById('client-dropdown-menu').style.display='none'">
                             <div class="user-profile" style="cursor: pointer;">
                                 <div class="user-info">
                                     <span class="user-name">{{ auth()->guard('client')->user()->name }}</span>
                                     <span class="user-role">{{ __('Client') }}</span>
                                 </div>
-                                <div class="user-avatar" style="background: rgba(0, 158, 253, 0.1); color: var(--color-primary);">
+                                <div class="user-avatar"
+                                    style="background: rgba(0, 158, 253, 0.1); color: var(--color-primary);">
                                     {{ strtoupper(substr(auth()->guard('client')->user()->name, 0, 1)) }}
                                 </div>
                             </div>
-                            <div id="client-dropdown-menu" style="display: none; position: absolute; top: 100%; {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }} min-width: 180px; z-index: 1000; padding-top: 10px;">
-                                <div style="background: var(--bg-card, #1e1e2d); border: 1px solid var(--border-color, #2b2b40); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 8px 0;">
-                                    <a href="/client/profile" style="display: flex; align-items: center; padding: 10px 16px; color: var(--text-main, #fff); text-decoration: none; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
-                                        <i class="ri-user-line" style="margin-inline-end: 8px; color: var(--color-primary);"></i> {{ __('My Profile') }}
+                            <div id="client-dropdown-menu"
+                                style="display: none; position: absolute; top: 100%; {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }} min-width: 180px; z-index: 1000; padding-top: 10px;">
+                                <div
+                                    style="background: var(--bg-card, #1e1e2d); border: 1px solid var(--border-color, #2b2b40); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 8px 0;">
+                                    <a href="/client/profile"
+                                        style="display: flex; align-items: center; padding: 10px 16px; color: var(--text-main, #fff); text-decoration: none; font-size: 0.9rem; transition: background 0.2s;"
+                                        onmouseover="this.style.background='var(--bg-hover, #2b2b40)'"
+                                        onmouseout="this.style.background='transparent'">
+                                        <i class="ri-user-line"
+                                            style="margin-inline-end: 8px; color: var(--color-primary);"></i>
+                                        {{ __('My Profile') }}
                                     </a>
-                                    <div style="height: 1px; background: var(--border-color, #2b2b40); margin: 4px 0;"></div>
+                                    <div style="height: 1px; background: var(--border-color, #2b2b40); margin: 4px 0;">
+                                    </div>
                                     <form action="{{ route('client.logout') }}" method="POST" style="margin: 0;">
                                         @csrf
-                                        <button type="submit" style="display: flex; align-items: center; width: 100%; text-align: start; background: none; border: none; padding: 10px 16px; color: var(--red, #f1416c); cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
-                                            <i class="ri-logout-box-r-line" style="margin-inline-end: 8px;"></i> {{ __('Logout') }}
+                                        <button type="submit"
+                                            style="display: flex; align-items: center; width: 100%; text-align: start; background: none; border: none; padding: 10px 16px; color: var(--red, #f1416c); cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: background 0.2s;"
+                                            onmouseover="this.style.background='var(--bg-hover, #2b2b40)'"
+                                            onmouseout="this.style.background='transparent'">
+                                            <i class="ri-logout-box-r-line" style="margin-inline-end: 8px;"></i>
+                                            {{ __('Logout') }}
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     @else
-                        <div class="user-dropdown-container" style="position: relative;" onmouseover="document.getElementById('user-dropdown-menu').style.display='block'" onmouseout="document.getElementById('user-dropdown-menu').style.display='none'">
+                        <div class="user-dropdown-container" style="position: relative;"
+                            onmouseover="document.getElementById('user-dropdown-menu').style.display='block'"
+                            onmouseout="document.getElementById('user-dropdown-menu').style.display='none'">
                             <div class="user-profile" style="cursor: pointer;">
                                 <div class="user-info">
                                     <span class="user-name">{{ auth()->user()->name }}</span>
@@ -166,17 +196,29 @@
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </div>
                             </div>
-                            
-                            <div id="user-dropdown-menu" style="display: none; position: absolute; top: 100%; {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }} min-width: 180px; z-index: 1000; padding-top: 10px;">
-                                <div style="background: var(--bg-card, #1e1e2d); border: 1px solid var(--border-color, #2b2b40); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 8px 0;">
-                                    <a href="{{ auth()->user()->role === 'admin' ? '/admin/employees/' . auth()->user()->id . '/edit' : '/employee/profile' }}" style="display: flex; align-items: center; padding: 10px 16px; color: var(--text-main, #fff); text-decoration: none; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
-                                        <i class="ri-user-line" style="margin-inline-end: 8px; color: var(--color-primary);"></i> {{ __('My Profile') }}
+
+                            <div id="user-dropdown-menu"
+                                style="display: none; position: absolute; top: 100%; {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }} min-width: 180px; z-index: 1000; padding-top: 10px;">
+                                <div
+                                    style="background: var(--bg-card, #1e1e2d); border: 1px solid var(--border-color, #2b2b40); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 8px 0;">
+                                    <a href="{{ auth()->user()->role === 'admin' ? '/admin/employees/' . auth()->user()->id . '/edit' : '/employee/profile' }}"
+                                        style="display: flex; align-items: center; padding: 10px 16px; color: var(--text-main, #fff); text-decoration: none; font-size: 0.9rem; transition: background 0.2s;"
+                                        onmouseover="this.style.background='var(--bg-hover, #2b2b40)'"
+                                        onmouseout="this.style.background='transparent'">
+                                        <i class="ri-user-line"
+                                            style="margin-inline-end: 8px; color: var(--color-primary);"></i>
+                                        {{ __('My Profile') }}
                                     </a>
-                                    <div style="height: 1px; background: var(--border-color, #2b2b40); margin: 4px 0;"></div>
+                                    <div style="height: 1px; background: var(--border-color, #2b2b40); margin: 4px 0;">
+                                    </div>
                                     <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                                         @csrf
-                                        <button type="submit" style="display: flex; align-items: center; width: 100%; text-align: start; background: none; border: none; padding: 10px 16px; color: var(--red, #f1416c); cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-hover, #2b2b40)'" onmouseout="this.style.background='transparent'">
-                                            <i class="ri-logout-box-r-line" style="margin-inline-end: 8px;"></i> {{ __('Logout') }}
+                                        <button type="submit"
+                                            style="display: flex; align-items: center; width: 100%; text-align: start; background: none; border: none; padding: 10px 16px; color: var(--red, #f1416c); cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: background 0.2s;"
+                                            onmouseover="this.style.background='var(--bg-hover, #2b2b40)'"
+                                            onmouseout="this.style.background='transparent'">
+                                            <i class="ri-logout-box-r-line" style="margin-inline-end: 8px;"></i>
+                                            {{ __('Logout') }}
                                         </button>
                                     </form>
                                 </div>
@@ -185,7 +227,7 @@
                     @endif
                 </div>
             </header>
-            
+
             <!-- Content Body -->
             <main class="content-body">
                 @if(session('success'))
@@ -201,10 +243,10 @@
                         <span>{{ __(session('error')) }}</span>
                     </div>
                 @endif
-                
+
                 @yield('content')
             </main>
-            
+
         </div>
     </div>
 
@@ -215,9 +257,12 @@
                 <i class="ri-alert-line"></i>
             </div>
             <h4 class="modal-title">{{ __('Are you sure?') }}</h4>
-            <p class="modal-text" id="globalConfirmMessage">{{ __('Are you sure you want to perform this action? This action cannot be undone.') }}</p>
+            <p class="modal-text" id="globalConfirmMessage">
+                {{ __('Are you sure you want to perform this action? This action cannot be undone.') }}
+            </p>
             <div class="modal-actions">
-                <button type="button" class="btn btn-secondary" onclick="closeGlobalConfirmPopup()">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-secondary"
+                    onclick="closeGlobalConfirmPopup()">{{ __('Cancel') }}</button>
                 <button type="button" class="btn btn-danger" id="globalConfirmBtn">{{ __('Confirm') }}</button>
             </div>
         </div>
@@ -226,7 +271,10 @@
     <style>
         .custom-modal-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
             z-index: 9999;
@@ -236,6 +284,7 @@
             opacity: 0;
             animation: fadeIn 0.3s forwards;
         }
+
         .custom-modal {
             background: var(--bg-card, #1e1e2d);
             border-radius: 12px;
@@ -248,6 +297,7 @@
             animation: scaleUp 0.3s forwards;
             border: 1px solid var(--border-color, #2b2b40);
         }
+
         .modal-icon {
             width: 60px;
             height: 60px;
@@ -260,6 +310,7 @@
             font-size: 30px;
             margin: 0 auto 16px;
         }
+
         .modal-title {
             color: var(--text-main, #fff);
             margin: 0 0 10px;
@@ -267,22 +318,30 @@
             font-weight: 600;
             font-size: 1.25rem;
         }
+
         .modal-text {
             color: var(--text-secondary, #92929f);
             margin: 0 0 24px;
             font-size: 0.95rem;
             line-height: 1.5;
         }
+
         .modal-actions {
             display: flex;
             justify-content: center;
             gap: 12px;
         }
+
         @keyframes fadeIn {
-            to { opacity: 1; }
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes scaleUp {
-            to { transform: scale(1); }
+            to {
+                transform: scale(1);
+            }
         }
     </style>
 
@@ -294,7 +353,7 @@
             globalFormToSubmitId = formId;
             const modal = document.getElementById('globalConfirmModal');
             const messageEl = document.getElementById('globalConfirmMessage');
-            if(message) {
+            if (message) {
                 messageEl.textContent = message;
             }
             modal.style.display = 'flex';
@@ -306,18 +365,18 @@
             globalFormToSubmitId = null;
         }
 
-        document.getElementById('globalConfirmBtn')?.addEventListener('click', function() {
+        document.getElementById('globalConfirmBtn')?.addEventListener('click', function () {
             if (globalFormToSubmitId) {
                 document.getElementById(globalFormToSubmitId).submit();
             }
         });
 
-        document.getElementById('sidebar-toggle')?.addEventListener('click', function() {
+        document.getElementById('sidebar-toggle')?.addEventListener('click', function () {
             document.getElementById('app-sidebar').classList.toggle('open');
         });
-        
+
         // Hide sidebar on clicking outside in mobile view
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const sidebar = document.getElementById('app-sidebar');
             const toggleBtn = document.getElementById('sidebar-toggle');
             if (window.innerWidth <= 991 && sidebar.classList.contains('open')) {
@@ -330,18 +389,18 @@
         // Global Custom Dropdowns handler
         document.addEventListener('DOMContentLoaded', function () {
             const dropdowns = document.querySelectorAll('.custom-dropdown');
-            
+
             dropdowns.forEach(dropdown => {
                 const trigger = dropdown.querySelector('.dropdown-trigger');
                 const menu = dropdown.querySelector('.dropdown-menu');
                 const hiddenInput = dropdown.querySelector('.dropdown-value-input');
                 const selectedText = dropdown.querySelector('.selected-text');
                 const items = dropdown.querySelectorAll('.dropdown-item');
-                
+
                 // Open/Close dropdown on trigger click
                 trigger.addEventListener('click', function (e) {
                     e.stopPropagation();
-                    
+
                     // Close all other dropdowns first
                     dropdowns.forEach(otherDropdown => {
                         if (otherDropdown !== dropdown) {
@@ -349,7 +408,7 @@
                             otherDropdown.closest('.attendance-row-card')?.classList.remove('open-dropdown');
                         }
                     });
-                    
+
                     const isOpen = dropdown.classList.toggle('open');
                     const card = dropdown.closest('.attendance-row-card');
                     if (card) {
@@ -360,32 +419,32 @@
                         }
                     }
                 });
-                
+
                 // Handle item selection
                 items.forEach(item => {
                     item.addEventListener('click', function (e) {
                         e.stopPropagation();
-                        
+
                         const val = item.getAttribute('data-value');
                         const text = item.textContent.trim();
-                        
+
                         // Update text and hidden input value
                         selectedText.textContent = text;
                         if (hiddenInput) {
                             hiddenInput.value = val;
                         }
-                        
+
                         // Update selected styling
                         items.forEach(i => i.classList.remove('selected'));
                         item.classList.add('selected');
-                        
+
                         // Close dropdown
                         dropdown.classList.remove('open');
                         dropdown.closest('.attendance-row-card')?.classList.remove('open-dropdown');
                     });
                 });
             });
-            
+
             // Close dropdowns on clicking outside
             document.addEventListener('click', function () {
                 dropdowns.forEach(dropdown => {
@@ -395,12 +454,12 @@
             });
         });
     </script>
-    
+
     <!-- jQuery & Select2 JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('.select2-multiple').select2({
                 placeholder: "{{ __('Select options...') }}",
                 allowClear: true,
@@ -408,7 +467,8 @@
             });
         });
     </script>
-    
+
     @yield('scripts')
 </body>
+
 </html>

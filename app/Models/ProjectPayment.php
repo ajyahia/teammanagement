@@ -11,6 +11,7 @@ class ProjectPayment extends Model
 
     protected $fillable = [
         'project_id',
+        'cycle_id',
         'title',
         'amount',
         'due_date',
@@ -28,5 +29,10 @@ class ProjectPayment extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function cycle()
+    {
+        return $this->belongsTo(ProjectCycle::class, 'cycle_id');
     }
 }

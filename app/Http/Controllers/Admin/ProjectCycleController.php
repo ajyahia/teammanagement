@@ -23,11 +23,60 @@ class ProjectCycleController extends Controller
         return redirect()->back()->with('success', __('Billing cycle added successfully.'));
     }
 
+    public function update(Request $request, \App\Models\ProjectCycle $cycle)
+    {
+        $data = $request->validate([
+            'billing_date' => 'required|date',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $cycle->update($data);
+
+        // Cycles paid through installments must be re-checked against the new amount
+        if ($cycle->payments()->exists()) {
+            $cycle->syncPaidStatus();
+        }
+
+        return redirect()->back()->with('success', __('Billing cycle updated successfully.'));
+    }
+
     public function togglePaid(\App\Models\ProjectCycle $cycle)
     {
-        $cycle->is_paid = !$cycle->is_paid;
-        $cycle->paid_at = $cycle->is_paid ? now() : null;
-        $cycle->save();
+        if ($cycle->is_paid) {
+            // Mark as unpaid
+            $cycle->is_paid = false;
+            $cycle->paid_at = null;
+            $cycle->save();
+
+            // Set any paid payments on this cycle to pending
+            $cycle->payments()->where('status', 'paid')->update([
+                'status' => 'pending',
+                'paid_at' => null,
+            ]);
+        } else {
+            // Mark as fully paid
+            $cycle->is_paid = true;
+            $cycle->paid_at = now();
+            $cycle->save();
+
+            if ($cycle->payments()->exists()) {
+                // If it already has payments, mark all pending as paid
+                $cycle->payments()->where('status', '!=', 'paid')->update([
+                    'status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+            } else {
+                // Automatically record a full payment for this cycle so Treasury tracks it accurately
+                $cycle->project->payments()->create([
+                    'cycle_id' => $cycle->id,
+                    'title' => __('Full Cycle Payment') . ' (' . $cycle->billing_date->format('M Y') . ')',
+                    'amount' => $cycle->amount,
+                    'due_date' => $cycle->billing_date,
+                    'paid_at' => now(),
+                    'status' => 'paid',
+                ]);
+            }
+        }
 
         return redirect()->back()->with('success', __('Cycle payment status updated.'));
     }

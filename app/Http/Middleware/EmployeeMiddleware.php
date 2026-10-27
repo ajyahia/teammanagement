@@ -19,6 +19,15 @@ class EmployeeMiddleware
             abort(403, 'Unauthorized action.');
         }
 
+        // Sign out employees who were deactivated while still logged in
+        if (!auth()->user()->isActive()) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect('/login')->withErrors(['username' => __('This account has been deactivated.')]);
+        }
+
         return $next($request);
     }
 }

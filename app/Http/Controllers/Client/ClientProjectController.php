@@ -24,7 +24,7 @@ class ClientProjectController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $project->load(['service', 'payments']);
+        $project->load(['service', 'payments.cycle', 'cycles.payments']);
         
         return view('client.projects.show', compact('project'));
     }

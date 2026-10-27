@@ -21,7 +21,7 @@ class ProjectController extends Controller
     {
         $clients = Client::orderBy('name')->get();
         $services = Service::orderBy('name')->get();
-        $employees = User::with('services')->where('role', 'employee')->orderBy('name')->get();
+        $employees = User::with('services')->where('role', 'employee')->activeOn()->orderBy('name')->get();
         return view('admin.projects.create', compact('clients', 'services', 'employees'));
     }
 
@@ -33,7 +33,8 @@ class ProjectController extends Controller
             'employee_ids' => 'nullable|array',
             'employee_ids.*' => 'exists:users,id',
             'agreed_price' => 'required|numeric|min:0',
-            'paid_amount' => 'required|numeric|min:0',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'paid_at' => 'nullable|date',
             'status' => 'required|string|in:pending,in_progress,completed,cancelled',
             'billing_type' => 'required|string|in:one_time,monthly,per_page,yearly',
             'subscription_status' => 'nullable|string|in:active,stopped',
@@ -47,7 +48,7 @@ class ProjectController extends Controller
         if (!in_array($data['billing_type'], ['monthly', 'yearly'])) {
             $data['subscription_status'] = null;
         }
-        
+
         if ($data['billing_type'] === 'per_page') {
             $data['agreed_price'] = $data['page_count'] * $data['price_per_page'];
         } else {
@@ -56,10 +57,27 @@ class ProjectController extends Controller
         }
 
         $employeeIds = $data['employee_ids'] ?? [];
-        unset($data['employee_ids']);
+        $initialPaid = (float) ($data['paid_amount'] ?? 0);
+        $initialPaidAt = $data['paid_at'] ?? now()->toDateString();
+        unset($data['employee_ids'], $data['paid_at']);
+
+        // Money paid at creation is recorded as a real installment so it shows in
+        // the treasury, reports and subscription totals (paid_amount is legacy only).
+        $data['paid_amount'] = 0;
 
         $project = Project::create($data);
         $project->employees()->sync($employeeIds);
+
+        if ($initialPaid > 0) {
+            $project->payments()->create([
+                'title' => __('Initial Payment'),
+                'amount' => $initialPaid,
+                'due_date' => $initialPaidAt,
+                'paid_at' => $initialPaidAt,
+                'status' => 'paid',
+            ]);
+        }
+
         return redirect()->route('admin.projects.index')->with('success', __('Project created successfully.'));
     }
 
@@ -67,7 +85,11 @@ class ProjectController extends Controller
     {
         $clients = Client::orderBy('name')->get();
         $services = Service::orderBy('name')->get();
-        $employees = User::with('services')->where('role', 'employee')->orderBy('name')->get();
+        // Keep already-assigned employees selectable even if they were deactivated
+        $assignedIds = $project->employees()->pluck('users.id');
+        $employees = User::with('services')->where('role', 'employee')
+            ->where(fn($q) => $q->activeOn()->orWhereIn('id', $assignedIds))
+            ->orderBy('name')->get();
         return view('admin.projects.edit', compact('project', 'clients', 'services', 'employees'));
     }
 

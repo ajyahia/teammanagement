@@ -38,27 +38,35 @@ class TreasuryController extends Controller
             ];
         });
 
-        // Fetch Incoming: Project Payments (Installments)
-        $projectPayments = ProjectPayment::with('project.client', 'project.service')->where('status', 'paid')->get()->map(function($pp) {
+        // Fetch Incoming: Project Payments (Installments & Cycle Payments)
+        $projectPayments = ProjectPayment::with('project.client', 'project.service', 'cycle')->where('status', 'paid')->get()->map(function($pp) {
+            $context = '';
+            if ($pp->cycle) {
+                $context = ' [' . $pp->cycle->billing_date->format('M Y') . ']';
+            }
             return [
                 'date' => $pp->paid_at ?? $pp->due_date,
                 'type' => 'project_payment',
-                'amount' => $pp->amount,
-                'description' => __('Project Installment') . ' (' . ($pp->project && $pp->project->service ? $pp->project->service->name : '') . ' - ' . ($pp->project && $pp->project->client ? $pp->project->client->name : '') . '): ' . $pp->title,
+                'amount' => (float) $pp->amount,
+                'description' => __('Payment/Installment') . ' (' . ($pp->project && $pp->project->service ? $pp->project->service->name : '') . ' - ' . ($pp->project && $pp->project->client ? $pp->project->client->name : '') . '): ' . $pp->title . $context,
                 'direction' => 'in'
             ];
         });
 
-        // Fetch Incoming: Project Cycles (Subscriptions)
-        $projectCycles = ProjectCycle::with('project.client', 'project.service')->where('is_paid', true)->get()->map(function($pc) {
-            return [
-                'date' => $pc->paid_at ?? $pc->billing_date,
-                'type' => 'project_cycle',
-                'amount' => $pc->amount,
-                'description' => __('Subscription Payment') . ' (' . ($pc->project && $pc->project->service ? $pc->project->service->name : '') . ' - ' . ($pc->project && $pc->project->client ? $pc->project->client->name : '') . '): ' . $pc->billing_date->format('M Y'),
-                'direction' => 'in'
-            ];
-        });
+        // Fetch Incoming: Legacy/Direct Project Cycles without individual payment records
+        $projectCycles = ProjectCycle::with('project.client', 'project.service')
+            ->where('is_paid', true)
+            ->whereDoesntHave('payments')
+            ->get()
+            ->map(function($pc) {
+                return [
+                    'date' => $pc->paid_at ?? $pc->billing_date,
+                    'type' => 'project_cycle',
+                    'amount' => (float) $pc->amount,
+                    'description' => __('Subscription Payment') . ' (' . ($pc->project && $pc->project->service ? $pc->project->service->name : '') . ' - ' . ($pc->project && $pc->project->client ? $pc->project->client->name : '') . '): ' . $pc->billing_date->format('M Y'),
+                    'direction' => 'in'
+                ];
+            });
 
         // Combine all transactions
         $transactions = collect([])
