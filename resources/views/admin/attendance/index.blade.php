@@ -428,9 +428,9 @@
                     <!-- Hidden Drawer for Notes / Status Override (Vacation / Excused) -->
                     <div id="drawer-{{ $emp->id }}" style="display: {{ $notes || $isOther ? 'block' : 'none' }}; background: rgba(0,0,0,0.15); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; margin-top: -6px; margin-bottom: 6px;" onclick="event.stopPropagation();">
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                            <div style="width: 170px;">
-                                <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">{{ __('Special Status Override') }}</label>
-                                <select name="statuses[{{ $emp->id }}]" id="status-override-{{ $emp->id }}" class="form-control" style="padding: 6px 10px; font-size: 0.85rem;" onchange="handleOverrideChange({{ $emp->id }})">
+                            <div style="flex: 0 0 280px; max-width: 100%;">
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 4px; white-space: nowrap;">{{ __('Special Status Override') }}</label>
+                                <select name="statuses[{{ $emp->id }}]" id="status-override-{{ $emp->id }}" class="form-control" style="width: 100%; box-sizing: border-box; padding: 6px 10px; font-size: 0.85rem; text-overflow: ellipsis;" onchange="handleOverrideChange({{ $emp->id }})">
                                     <option value="">-- {{ __('Follow Checkbox (Present/Absent)') }} --</option>
                                     <option value="vacation" {{ $status === 'vacation' ? 'selected' : '' }}>{{ __('Vacation') }}</option>
                                     <option value="excused" {{ $status === 'excused' ? 'selected' : '' }}>{{ __('Excused') }}</option>

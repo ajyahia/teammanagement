@@ -4,6 +4,8 @@
         <span>{{ __('Dashboard') }}</span>
     </a>
 </li>
+
+<li class="sidebar-section">{{ __('Team') }}</li>
 <li class="sidebar-item {{ request()->is('admin/employees*') ? 'active' : '' }}">
     <a href="/admin/employees">
         <i class="ri-user-settings-fill"></i>
@@ -22,33 +24,14 @@
         <span>{{ __('Monthly Summary') }}</span>
     </a>
 </li>
-
-<li class="sidebar-item {{ request()->routeIs('admin.treasury.*') ? 'active' : '' }}">
-    <a href="{{ route('admin.treasury.index') }}">
-        <i class="ri-safe-line"></i>
-        <span>{{ __('Treasury (الخزنة)') }}</span>
-    </a>
-</li>
 <li class="sidebar-item {{ request()->is('admin/salaries*') ? 'active' : '' }}">
     <a href="/admin/salaries">
         <i class="ri-money-dollar-circle-fill"></i>
         <span>{{ __('Salaries') }}</span>
     </a>
 </li>
-<li class="sidebar-item {{ request()->is('admin/policies*') ? 'active' : '' }}">
-    <a href="/admin/policies">
-        <i class="ri-file-text-fill"></i>
-        <span>{{ __('Company Policy') }}</span>
-    </a>
-</li>
-<li class="sidebar-item {{ request()->is('admin/settings*') ? 'active' : '' }}">
-    <a href="/admin/settings">
-        <i class="ri-settings-4-fill"></i>
-        <span>{{ __('Settings') }}</span>
-    </a>
-</li>
 
-<!-- CRM & Projects -->
+<li class="sidebar-section">{{ __('Work') }}</li>
 <li class="sidebar-item {{ request()->is('admin/clients*') ? 'active' : '' }}">
     <a href="/admin/clients">
         <i class="ri-contacts-book-2-fill"></i>
@@ -67,14 +50,20 @@
         <span>{{ __('Projects') }}</span>
     </a>
 </li>
+
+<li class="sidebar-section">{{ __('Finance') }}</li>
+<li class="sidebar-item {{ request()->routeIs('admin.treasury.*') ? 'active' : '' }}">
+    <a href="{{ route('admin.treasury.index') }}">
+        <i class="ri-safe-line"></i>
+        <span>{{ __('Treasury') }}</span>
+    </a>
+</li>
 <li class="sidebar-item {{ request()->is('admin/expenses*') ? 'active' : '' }}">
     <a href="/admin/expenses">
         <i class="ri-money-dollar-circle-line"></i>
-        <span>المصروفات</span>
+        <span>{{ __('Expenses') }}</span>
     </a>
 </li>
-<hr style="border-color: rgba(255,255,255,0.05); margin: 10px 16px;">
-
 <li class="sidebar-item {{ request()->is('admin/reports/services*') ? 'active' : '' }}">
     <a href="/admin/reports/services">
         <i class="ri-pie-chart-2-fill"></i>
@@ -85,5 +74,19 @@
     <a href="/admin/reports/employees">
         <i class="ri-bar-chart-grouped-fill"></i>
         <span>{{ __('Employee Reports') }}</span>
+    </a>
+</li>
+
+<li class="sidebar-section">{{ __('System') }}</li>
+<li class="sidebar-item {{ request()->is('admin/policies*') ? 'active' : '' }}">
+    <a href="/admin/policies">
+        <i class="ri-file-text-fill"></i>
+        <span>{{ __('Company Policy') }}</span>
+    </a>
+</li>
+<li class="sidebar-item {{ request()->is('admin/settings*') ? 'active' : '' }}">
+    <a href="/admin/settings">
+        <i class="ri-settings-4-fill"></i>
+        <span>{{ __('Settings') }}</span>
     </a>
 </li>
