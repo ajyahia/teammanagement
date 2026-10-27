@@ -104,6 +104,13 @@
             <label class="form-label">{{ __('Payment Date') }}</label>
             <input type="date" name="paid_at" class="form-control" value="{{ old('paid_at', date('Y-m-d')) }}">
         </div>
+
+        <div class="form-group" id="installment_group">
+            <label class="form-label" title="{{ __('The remaining balance is split into monthly pending installments of this amount. You can edit each one later.') }}">
+                {{ __('Monthly Installment') }} <i class="ri-information-line"></i>
+            </label>
+            <input type="number" step="0.01" min="0.01" name="installment_amount" class="form-control" placeholder="{{ __('Optional') }}" value="{{ old('installment_amount') }}">
+        </div>
     @elseif((float) $project->paid_amount > 0)
         <div class="form-group">
             <label class="form-label" title="{{ __('Legacy payments. New payments should be added as installments below.') }}">
@@ -229,6 +236,10 @@
 
         function toggleBillingFields() {
             // Subscription
+            const installmentGroup = document.getElementById('installment_group');
+            if (installmentGroup) {
+                installmentGroup.style.display = (billingSelect.value === 'monthly' || billingSelect.value === 'yearly') ? 'none' : '';
+            }
             if (billingSelect.value === 'monthly' || billingSelect.value === 'yearly') {
                 subGroup.style.display = '';
                 startDateLabel.innerHTML = '{{ __('Service Payment Date') }}';

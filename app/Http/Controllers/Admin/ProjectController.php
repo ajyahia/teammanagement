@@ -35,6 +35,7 @@ class ProjectController extends Controller
             'agreed_price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'paid_at' => 'nullable|date',
+            'installment_amount' => 'nullable|numeric|min:0.01',
             'status' => 'required|string|in:pending,in_progress,completed,cancelled',
             'billing_type' => 'required|string|in:one_time,monthly,per_page,yearly',
             'subscription_status' => 'nullable|string|in:active,stopped',
@@ -59,7 +60,8 @@ class ProjectController extends Controller
         $employeeIds = $data['employee_ids'] ?? [];
         $initialPaid = (float) ($data['paid_amount'] ?? 0);
         $initialPaidAt = $data['paid_at'] ?? now()->toDateString();
-        unset($data['employee_ids'], $data['paid_at']);
+        $installmentAmount = (float) ($data['installment_amount'] ?? 0);
+        unset($data['employee_ids'], $data['paid_at'], $data['installment_amount']);
 
         // Money paid at creation is recorded as a real installment so it shows in
         // the treasury, reports and subscription totals (paid_amount is legacy only).
@@ -76,6 +78,23 @@ class ProjectController extends Controller
                 'paid_at' => $initialPaidAt,
                 'status' => 'paid',
             ]);
+        }
+
+        // Split the remaining balance into monthly pending installments
+        // (the last one takes whatever is left). Subscriptions use cycles instead.
+        $remaining = round((float) $project->agreed_price - $initialPaid, 2);
+        if ($installmentAmount > 0 && $remaining > 0 && !in_array($project->billing_type, ['monthly', 'yearly'])) {
+            $dueDate = \Carbon\Carbon::parse($initialPaidAt);
+            for ($i = 1; $remaining > 0 && $i <= 120; $i++) {
+                $amount = min($installmentAmount, $remaining);
+                $project->payments()->create([
+                    'title' => __('Installment') . ' ' . $i,
+                    'amount' => $amount,
+                    'due_date' => $dueDate->copy()->addMonthsNoOverflow($i)->toDateString(),
+                    'status' => 'pending',
+                ]);
+                $remaining = round($remaining - $amount, 2);
+            }
         }
 
         return redirect()->route('admin.projects.index')->with('success', __('Project created successfully.'));
