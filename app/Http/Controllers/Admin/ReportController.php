@@ -17,37 +17,25 @@ class ReportController extends Controller
         $year = $request->input('year', date('Y'));
         $selectedDate = Carbon::createFromDate($year, $month, 1);
 
-        $services = Service::with(['projects'])->get();
-        
+        $services = Service::with(['projects.payments', 'projects.cycles.payments'])->get();
+
         $serviceStats = $services->map(function ($service) use ($month, $year) {
-            $allProjects = $service->projects;
             $allTimeRevenue = 0;
             $monthlyRevenue = 0;
 
-            foreach ($allProjects as $project) {
-                // All recorded payments for this project
-                $paidPayments = $project->payments()->where('status', 'paid')->get();
-                $allTimeRevenue += $paidPayments->sum('amount');
-                $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
-                    return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
-                })->sum('amount');
-
-                // Legacy direct cycles without payment records
-                if (in_array($project->billing_type, ['monthly', 'yearly'])) {
-                    $directCycles = $project->cycles()->where('is_paid', true)->whereDoesntHave('payments')->get();
-                    $allTimeRevenue += $directCycles->sum('amount');
-                    $monthlyRevenue += $directCycles->filter(function ($c) use ($month, $year) {
-                        return $c->paid_at && $c->paid_at->format('m-Y') === "{$month}-{$year}";
-                    })->sum('amount');
-                }
+            foreach ($service->projects as $project) {
+                [$all, $monthly] = $this->projectRevenue($project, (int) $month, (int) $year);
+                $allTimeRevenue += $all;
+                $monthlyRevenue += $monthly;
             }
 
             return [
                 'name' => $service->name,
+                'projects_count' => $service->projects->count(),
                 'all_time_revenue' => $allTimeRevenue,
                 'monthly_revenue' => $monthlyRevenue,
             ];
-        });
+        })->sortByDesc('monthly_revenue')->values();
 
         // Calculate Totals
         $totalMonthlyRevenue = $serviceStats->sum('monthly_revenue');
@@ -79,29 +67,20 @@ class ReportController extends Controller
         $year = $request->input('year', date('Y'));
         $selectedDate = Carbon::createFromDate($year, $month, 1);
 
-        $employees = User::where('role', 'employee')->with(['projects'])->get();
+        $employees = User::where('role', 'employee')
+            ->with(['projects.payments', 'projects.cycles.payments', 'projects.employees'])
+            ->get();
 
         $employeeStats = $employees->map(function ($emp) use ($month, $year) {
-            $allProjects = $emp->projects;
             $allTimeRevenue = 0;
             $monthlyRevenue = 0;
 
-            foreach ($allProjects as $project) {
-                // All recorded payments for this project
-                $paidPayments = $project->payments()->where('status', 'paid')->get();
-                $allTimeRevenue += $paidPayments->sum('amount');
-                $monthlyRevenue += $paidPayments->filter(function ($p) use ($month, $year) {
-                    return $p->paid_at && $p->paid_at->format('m-Y') === "{$month}-{$year}";
-                })->sum('amount');
-
-                // Legacy direct cycles without payment records
-                if (in_array($project->billing_type, ['monthly', 'yearly'])) {
-                    $directCycles = $project->cycles()->where('is_paid', true)->whereDoesntHave('payments')->get();
-                    $allTimeRevenue += $directCycles->sum('amount');
-                    $monthlyRevenue += $directCycles->filter(function ($c) use ($month, $year) {
-                        return $c->paid_at && $c->paid_at->format('m-Y') === "{$month}-{$year}";
-                    })->sum('amount');
-                }
+            foreach ($emp->projects as $project) {
+                [$all, $monthly] = $this->projectRevenue($project, (int) $month, (int) $year);
+                // A project shared by several employees is split between them, not counted for each
+                $team = max(1, $project->employees->count());
+                $allTimeRevenue += $all / $team;
+                $monthlyRevenue += $monthly / $team;
             }
 
             $monthlySalaryPaid = \App\Models\SalaryPayment::where('user_id', $emp->id)->where('month', (int)$month)->where('year', (int)$year)->sum('amount');
@@ -109,17 +88,42 @@ class ReportController extends Controller
 
             return [
                 'name' => $emp->name,
-                'all_time_revenue' => $allTimeRevenue,
-                'monthly_revenue' => $monthlyRevenue,
+                'projects_count' => $emp->projects->count(),
+                'all_time_revenue' => round($allTimeRevenue, 2),
+                'monthly_revenue' => round($monthlyRevenue, 2),
                 'monthly_salary' => $monthlySalaryPaid,
                 'all_time_salary' => $allTimeSalaryPaid,
-                'monthly_profit' => $monthlyRevenue - $monthlySalaryPaid,
-                'all_time_profit' => $allTimeRevenue - $allTimeSalaryPaid,
+                'monthly_profit' => round($monthlyRevenue - $monthlySalaryPaid, 2),
+                'all_time_profit' => round($allTimeRevenue - $allTimeSalaryPaid, 2),
             ];
-        });
+        })->sortByDesc('monthly_revenue')->values();
 
         return view('admin.reports.employees', compact(
             'employeeStats', 'month', 'year', 'selectedDate'
         ));
+    }
+
+    /**
+     * Money actually received for a project: [all time, selected month].
+     * Paid installments count by their paid date; subscription cycles marked
+     * paid without any payment record are counted as well.
+     */
+    private function projectRevenue($project, int $month, int $year): array
+    {
+        $paid = $project->payments->where('status', 'paid');
+        $all = (float) $paid->sum('amount');
+        $monthly = (float) $paid
+            ->filter(fn($p) => $p->paid_at && $p->paid_at->month === $month && $p->paid_at->year === $year)
+            ->sum('amount');
+
+        if (in_array($project->billing_type, ['monthly', 'yearly'])) {
+            $direct = $project->cycles->filter(fn($c) => $c->is_paid && $c->payments->isEmpty());
+            $all += (float) $direct->sum('amount');
+            $monthly += (float) $direct
+                ->filter(fn($c) => $c->paid_at && $c->paid_at->month === $month && $c->paid_at->year === $year)
+                ->sum('amount');
+        }
+
+        return [$all, $monthly];
     }
 }

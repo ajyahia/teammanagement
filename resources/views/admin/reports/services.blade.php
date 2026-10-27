@@ -19,7 +19,7 @@
                 <select name="month" class="form-control" style="width: auto;">
                     @for($m=1; $m<=12; $m++)
                         <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}" {{ $month == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>
-                            {{ date('F', mktime(0, 0, 0, $m, 10)) }}
+                            {{ \Carbon\Carbon::create(2000, $m, 1)->translatedFormat('F') }}
                         </option>
                     @endfor
                 </select>
@@ -33,12 +33,22 @@
         </div>
     </div>
 
+    <div class="card" style="margin-bottom: 24px; border-inline-start: 4px solid var(--color-primary);">
+        <h4 style="margin-top: 0; font-weight: 600;"><i class="ri-information-line"></i> {{ __('How to read this report') }}</h4>
+        <ul style="margin: 0; padding-inline-start: 20px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.9;">
+            <li><strong>{{ __('Revenue') }}</strong>: {{ __('money actually received from clients, counted by payment date. Pending installments are not counted until they are marked as Paid.') }}</li>
+            <li><strong>{{ __('Net Profit') }}</strong> = {{ __('Revenue') }} − {{ __('Salaries Paid') }} − {{ __('Expenses') }}.</li>
+            <li>{{ __('The first card is for the selected month, the second is for everything since the start.') }}</li>
+            <li>{{ __('The table below shows how much each service brought in.') }}</li>
+        </ul>
+    </div>
+
     <!-- Overall Financial Summary Cards -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px;">
         <!-- Monthly Summary -->
         <div class="card" style="margin-bottom: 0; background: linear-gradient(135deg, rgba(24,24,38,1) 0%, rgba(30,30,46,1) 100%); border-top: 4px solid var(--color-primary);">
             <h4 style="color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 0;">
-                <i class="ri-calendar-todo-line"></i> {{ __('Monthly Overview') }} ({{ $selectedDate->format('M Y') }})
+                <i class="ri-calendar-todo-line"></i> {{ __('Monthly Overview') }} ({{ $selectedDate->translatedFormat('F Y') }})
             </h4>
             <div style="margin-top: 20px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -97,6 +107,9 @@
             <div style="width: 100%; height: 350px; display: flex; justify-content: center; align-items: center;">
                 <canvas id="serviceChart"></canvas>
             </div>
+            @if($serviceStats->sum('monthly_revenue') == 0)
+                <p style="text-align: center; color: var(--text-secondary); margin: 10px 0 0;">{{ __('No payments were received in this month.') }}</p>
+            @endif
         </div>
 
         <!-- Services Report Table (Right Side) -->
@@ -110,7 +123,8 @@
                     <thead>
                         <tr>
                             <th>{{ __('Service') }}</th>
-                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->format('M Y') }})</small></th>
+                            <th>{{ __('Projects') }}</th>
+                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->translatedFormat('F Y') }})</small></th>
                             <th>{{ __('All-Time Revenue') }}</th>
                         </tr>
                     </thead>
@@ -118,12 +132,13 @@
                         @foreach($serviceStats as $stat)
                             <tr>
                                 <td><strong>{{ $stat['name'] }}</strong></td>
+                                <td>{{ $stat['projects_count'] }}</td>
                                 <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--color-primary-light);">{{ number_format($stat['monthly_revenue'], 2) }}</td>
                                 <td style="font-weight: bold;">{{ number_format($stat['all_time_revenue'], 2) }}</td>
                             </tr>
                         @endforeach
                         @if(count($serviceStats) === 0)
-                            <tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">{{ __('No services found.') }}</td></tr>
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">{{ __('No services found.') }}</td></tr>
                         @endif
                     </tbody>
                 </table>

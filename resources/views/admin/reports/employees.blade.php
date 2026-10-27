@@ -19,7 +19,7 @@
                 <select name="month" class="form-control" style="width: auto;">
                     @for($m=1; $m<=12; $m++)
                         <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}" {{ $month == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>
-                            {{ date('F', mktime(0, 0, 0, $m, 10)) }}
+                            {{ \Carbon\Carbon::create(2000, $m, 1)->translatedFormat('F') }}
                         </option>
                     @endfor
                 </select>
@@ -33,12 +33,25 @@
         </div>
     </div>
 
+    <div class="card" style="margin-bottom: 24px; border-inline-start: 4px solid var(--color-primary);">
+        <h4 style="margin-top: 0; font-weight: 600;"><i class="ri-information-line"></i> {{ __('How to read this report') }}</h4>
+        <ul style="margin: 0; padding-inline-start: 20px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.9;">
+            <li><strong>{{ __('Revenue') }}</strong>: {{ __('money actually received from clients on the projects the employee is assigned to, counted by payment date. A project shared by several employees is split equally between them.') }}</li>
+            <li><strong>{{ __('Salary') }}</strong>: {{ __('salary actually paid to the employee for the selected month.') }}</li>
+            <li><strong>{{ __('Net') }}</strong>: {{ __('revenue minus salary. A negative number means the employee cost more than the money received from their projects in that period.') }}</li>
+            <li>{{ __('Pending installments are not counted until they are marked as Paid.') }}</li>
+        </ul>
+    </div>
+
     <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
         <!-- Employee Chart -->
         <div class="card" style="flex: 1; min-width: 400px; margin-bottom: 0;">
             <div style="width: 100%; height: 350px;">
                 <canvas id="employeeChart"></canvas>
             </div>
+            @if($employeeStats->sum('monthly_revenue') == 0 && $employeeStats->sum('monthly_salary') == 0)
+                <p style="text-align: center; color: var(--text-secondary); margin: 10px 0 0;">{{ __('No payments or salaries were recorded in this month.') }}</p>
+            @endif
         </div>
 
         <!-- Employees Report Table -->
@@ -52,7 +65,8 @@
                     <thead>
                         <tr>
                             <th>{{ __('Employee') }}</th>
-                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->format('M Y') }})</small></th>
+                            <th>{{ __('Projects') }}</th>
+                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->translatedFormat('F Y') }})</small></th>
                             <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Salary') }}</th>
                             <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Net') }}</th>
                             <th>{{ __('All-Time Revenue') }}</th>
@@ -70,6 +84,7 @@
                                         <strong>{{ $stat['name'] }}</strong>
                                     </div>
                                 </td>
+                                <td>{{ $stat['projects_count'] }}</td>
                                 <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--color-primary-light);">{{ number_format($stat['monthly_revenue'], 2) }}</td>
                                 <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--red);">- {{ number_format($stat['monthly_salary'], 2) }}</td>
                                 <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: {{ $stat['monthly_profit'] >= 0 ? 'var(--green)' : 'var(--red)' }};">{{ number_format($stat['monthly_profit'], 2) }}</td>
@@ -78,7 +93,7 @@
                             </tr>
                         @endforeach
                         @if(count($employeeStats) === 0)
-                            <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">{{ __('No employees found.') }}</td></tr>
+                            <tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">{{ __('No employees found.') }}</td></tr>
                         @endif
                     </tbody>
                 </table>
