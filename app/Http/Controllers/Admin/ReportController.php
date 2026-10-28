@@ -11,60 +11,36 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function services(Request $request)
+    public function services(Request $request, \App\Services\ReportService $reports)
     {
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
         $selectedDate = Carbon::createFromDate($year, $month, 1);
 
+        // Money in / out for every month of the year
+        $series = $reports->monthlySeries((int) $year);
+        $yearTotals = $reports->totals($series);
+        $monthTotals = $series[(int) $month];
+
+        // Revenue by service
         $services = Service::with(['projects.payments', 'projects.cycles.payments'])->get();
-
         $serviceStats = $services->map(function ($service) use ($month, $year) {
-            $allTimeRevenue = 0;
-            $monthlyRevenue = 0;
-
+            $row = ['name' => $service->name, 'projects_count' => $service->projects->count(), 'month' => 0, 'year' => 0, 'all' => 0];
             foreach ($service->projects as $project) {
-                [$all, $monthly] = $this->projectRevenue($project, (int) $month, (int) $year);
-                $allTimeRevenue += $all;
-                $monthlyRevenue += $monthly;
+                [$all, $monthly, $yearly] = $this->projectRevenue($project, (int) $month, (int) $year);
+                $row['all'] += $all;
+                $row['month'] += $monthly;
+                $row['year'] += $yearly;
             }
 
-            return [
-                'name' => $service->name,
-                'projects_count' => $service->projects->count(),
-                'all_time_revenue' => $allTimeRevenue,
-                'monthly_revenue' => $monthlyRevenue,
-            ];
-        })->sortByDesc('monthly_revenue')->values();
+            return $row;
+        })->sortByDesc('year')->values();
 
-        // Calculate Totals
-        $totalMonthlyRevenue = $serviceStats->sum('monthly_revenue');
-        $totalAllTimeRevenue = $serviceStats->sum('all_time_revenue');
-        $totalMonthlySalaries = \App\Models\SalaryPayment::where('month', (int)$month)->where('year', (int)$year)->sum('amount');
-        $totalAllTimeSalaries = \App\Models\SalaryPayment::sum('amount');
-        $totalMonthlyExpenses = Expense::whereMonth('expense_date', $month)->whereYear('expense_date', $year)->sum('amount');
-        $totalAllTimeExpenses = Expense::sum('amount');
-
-        // Money paid out to external workers (subcontractors)
-        $paidVendors = \App\Models\VendorPayment::where('status', 'paid');
-        $totalMonthlyVendors = (clone $paidVendors)->whereMonth('paid_at', $month)->whereYear('paid_at', $year)->sum('amount');
-        $totalAllTimeVendors = (clone $paidVendors)->sum('amount');
-
-        $financialSummary = [
-            'monthly_revenue' => $totalMonthlyRevenue,
-            'monthly_salaries' => $totalMonthlySalaries,
-            'monthly_expenses' => $totalMonthlyExpenses,
-            'monthly_vendors' => $totalMonthlyVendors,
-            'monthly_net_profit' => $totalMonthlyRevenue - $totalMonthlySalaries - $totalMonthlyExpenses - $totalMonthlyVendors,
-            'all_time_revenue' => $totalAllTimeRevenue,
-            'all_time_salaries' => $totalAllTimeSalaries,
-            'all_time_expenses' => $totalAllTimeExpenses,
-            'all_time_vendors' => $totalAllTimeVendors,
-            'all_time_net_profit' => $totalAllTimeRevenue - $totalAllTimeSalaries - $totalAllTimeExpenses - $totalAllTimeVendors,
-        ];
+        $projectStats = $reports->projectProfitability();
+        $dues = $reports->dues();
 
         return view('admin.reports.services', compact(
-            'serviceStats', 'month', 'year', 'selectedDate', 'financialSummary'
+            'month', 'year', 'selectedDate', 'series', 'yearTotals', 'monthTotals', 'serviceStats', 'projectStats', 'dues'
         ));
     }
 
@@ -83,7 +59,7 @@ class ReportController extends Controller
             $monthlyRevenue = 0;
 
             foreach ($emp->projects as $project) {
-                [$all, $monthly] = $this->projectRevenue($project, (int) $month, (int) $year);
+                [$all, $monthly] = array_slice($this->projectRevenue($project, (int) $month, (int) $year), 0, 2);
                 // A project shared by several employees is split between them, not counted for each
                 $team = max(1, $project->employees->count());
                 $allTimeRevenue += $all / $team;
@@ -93,7 +69,10 @@ class ReportController extends Controller
             $monthlySalaryPaid = \App\Models\SalaryPayment::where('user_id', $emp->id)->where('month', (int)$month)->where('year', (int)$year)->sum('amount');
             $allTimeSalaryPaid = \App\Models\SalaryPayment::where('user_id', $emp->id)->sum('amount');
 
+            $attendance = app(\App\Services\AttendanceService::class)->summary($emp, (int) $month, (int) $year);
+
             return [
+                'attendance' => $attendance,
                 'name' => $emp->name,
                 'projects_count' => $emp->projects->count(),
                 'all_time_revenue' => round($allTimeRevenue, 2),
@@ -111,26 +90,26 @@ class ReportController extends Controller
     }
 
     /**
-     * Money actually received for a project: [all time, selected month].
+     * Money actually received for a project: [all time, selected month, selected year].
      * Paid installments count by their paid date; subscription cycles marked
      * paid without any payment record are counted as well.
      */
     private function projectRevenue($project, int $month, int $year): array
     {
-        $paid = $project->payments->where('status', 'paid');
-        $all = (float) $paid->sum('amount');
-        $monthly = (float) $paid
-            ->filter(fn($p) => $p->paid_at && $p->paid_at->month === $month && $p->paid_at->year === $year)
-            ->sum('amount');
+        $items = $project->payments->where('status', 'paid')
+            ->map(fn($p) => ['amount' => (float) $p->amount, 'date' => $p->paid_at]);
 
         if (in_array($project->billing_type, ['monthly', 'yearly'])) {
-            $direct = $project->cycles->filter(fn($c) => $c->is_paid && $c->payments->isEmpty());
-            $all += (float) $direct->sum('amount');
-            $monthly += (float) $direct
-                ->filter(fn($c) => $c->paid_at && $c->paid_at->month === $month && $c->paid_at->year === $year)
-                ->sum('amount');
+            $items = $items->concat(
+                $project->cycles->filter(fn($c) => $c->is_paid && $c->payments->isEmpty())
+                    ->map(fn($c) => ['amount' => (float) $c->amount, 'date' => $c->paid_at])
+            );
         }
 
-        return [$all, $monthly];
+        $all = $items->sum('amount');
+        $yearly = $items->filter(fn($i) => $i['date'] && $i['date']->year === $year)->sum('amount');
+        $monthly = $items->filter(fn($i) => $i['date'] && $i['date']->year === $year && $i['date']->month === $month)->sum('amount');
+
+        return [$all, $monthly, $yearly];
     }
 }

@@ -67,7 +67,7 @@
 <li class="sidebar-item {{ request()->is('admin/reports/services*') ? 'active' : '' }}">
     <a href="/admin/reports/services">
         <i class="ri-pie-chart-2-fill"></i>
-        <span>{{ __('Service Reports') }}</span>
+        <span>{{ __('Financial Reports') }}</span>
     </a>
 </li>
 <li class="sidebar-item {{ request()->is('admin/reports/employees*') ? 'active' : '' }}">

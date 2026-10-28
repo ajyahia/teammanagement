@@ -71,6 +71,7 @@
                             <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Net') }}</th>
                             <th>{{ __('All-Time Revenue') }}</th>
                             <th>{{ __('All-Time Net') }}</th>
+                            <th>{{ __('Attendance') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ __('present / absent / leave') }})</small></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,10 +91,15 @@
                                 <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: {{ $stat['monthly_profit'] >= 0 ? 'var(--green)' : 'var(--red)' }};">{{ number_format($stat['monthly_profit'], 2) }}</td>
                                 <td style="font-weight: bold;">{{ number_format($stat['all_time_revenue'], 2) }}</td>
                                 <td style="font-weight: bold; color: {{ $stat['all_time_profit'] >= 0 ? 'var(--green)' : 'var(--red)' }};">{{ number_format($stat['all_time_profit'], 2) }}</td>
+                                <td style="white-space: nowrap;">
+                                    <span style="color: #22c55e; font-weight: 700;">{{ $stat['attendance']['present'] }}</span> /
+                                    <span style="color: #ef4444; font-weight: 700;">{{ $stat['attendance']['absent'] }}</span> /
+                                    <span style="color: var(--orange); font-weight: 700;">{{ $stat['attendance']['vacation'] + $stat['attendance']['excused'] }}</span>
+                                </td>
                             </tr>
                         @endforeach
                         @if(count($employeeStats) === 0)
-                            <tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">{{ __('No employees found.') }}</td></tr>
+                            <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">{{ __('No employees found.') }}</td></tr>
                         @endif
                     </tbody>
                 </table>
