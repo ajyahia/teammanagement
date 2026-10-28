@@ -11,7 +11,7 @@
     @php
         $monthNames = collect(range(1, 12))->map(fn($m) => \Carbon\Carbon::create(2000, $m, 1)->translatedFormat('F'));
         $rows = [
-            ['label' => __('Revenue'), 'key' => 'revenue', 'sign' => '+', 'color' => 'var(--green)'],
+            ['label' => __('Revenue (earned)'), 'key' => 'revenue', 'sign' => '+', 'color' => 'var(--green)'],
             ['label' => __('Salaries Paid'), 'key' => 'salaries', 'sign' => '−', 'color' => 'var(--red)'],
             ['label' => __('Expenses'), 'key' => 'expenses', 'sign' => '−', 'color' => 'var(--red)'],
             ['label' => __('External Workers'), 'key' => 'vendors', 'sign' => '−', 'color' => 'var(--red)'],
@@ -80,6 +80,11 @@
                             <td class="rep-num" style="text-align: end; color: {{ $r['color'] }};">{{ $r['sign'] }} {{ number_format($yearTotals[$r['key']], 2) }}</td>
                         </tr>
                     @endforeach
+                    <tr class="rep-muted" style="font-size: 0.82rem;">
+                        <td>{{ __('Collected from clients (cash)') }}</td>
+                        <td class="rep-num" style="text-align: end;">{{ number_format($monthTotals['collected'], 2) }}</td>
+                        <td class="rep-num" style="text-align: end;">{{ number_format($yearTotals['collected'], 2) }}</td>
+                    </tr>
                     <tr class="net">
                         <td>{{ __('Net Profit') }}</td>
                         <td class="rep-num {{ $monthTotals['net'] >= 0 ? 'rep-pos' : 'rep-neg' }}" style="text-align: end;">{{ number_format($monthTotals['net'], 2) }}</td>
@@ -88,7 +93,7 @@
                 </tbody>
             </table>
             <p class="rep-muted" style="font-size: 0.8rem; margin: 14px 0 0; line-height: 1.7;">
-                {{ __('Revenue is money actually received from clients, counted on the payment date. Pending installments and partner capital are not revenue.') }}
+                {{ __('Revenue is the project price spread over the months the client works with us (subscriptions: every active month), whatever day the client pays. Collected is the cash actually received. Partner capital is not revenue.') }}
             </p>
         </div>
 
@@ -170,13 +175,15 @@
     {{-- 3. Profit per project --}}
     <div class="card" style="margin-bottom: 24px;">
         <h4 class="rep-title"><i class="ri-briefcase-4-line" style="color: var(--color-primary);"></i> {{ __('Profit per Project') }}</h4>
-        <p class="rep-sub">{{ __('Net = everything since the project started: what the client paid, minus external workers and project expenses, before salaries. Team cost is only for the selected month: each employee salary split across the active projects they work on.') }}</p>
+        <p class="rep-sub">{{ __('Period = the months the client works with us (from the start date to the end date, or until the project is closed or the subscription stopped). Net = cash received minus paid external workers and project expenses, before salaries. Team cost is only for the selected month: each salary split across the projects the employee works on that month.') }}</p>
         <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>{{ __('Project') }}</th>
+                        <th>{{ __('Period') }}</th>
                         <th>{{ __('Agreed') }}</th>
+                        <th>{{ __('Earned') }} ({{ $selectedDate->translatedFormat('F') }})</th>
                         <th>{{ __('Received') }}</th>
                         <th>{{ __('Remaining') }}</th>
                         <th>{{ __('External Workers') }}</th>
@@ -194,7 +201,12 @@
                                     <div class="rep-muted" style="font-size: 0.78rem;">#{{ $p['id'] }} · {{ $p['service'] }}</div>
                                 </a>
                             </td>
+                            <td style="white-space: nowrap; font-size: 0.85rem;">
+                                {{ $p['period_from'] }} → {{ $p['running'] ? __('now') : $p['period_to'] }}
+                                <div class="rep-muted" style="font-size: 0.75rem;">{{ $p['period_months'] }} {{ __('months') }}</div>
+                            </td>
                             <td class="rep-num">{{ number_format($p['agreed'], 2) }}</td>
+                            <td class="rep-num {{ $p['earned_month'] > 0 ? '' : 'rep-muted' }}">{{ number_format($p['earned_month'], 2) }}</td>
                             <td class="rep-num rep-pos">{{ number_format($p['received'], 2) }}</td>
                             <td class="rep-num {{ $p['remaining'] > 0 ? '' : 'rep-muted' }}">{{ number_format($p['remaining'], 2) }}</td>
                             <td class="rep-num {{ $p['vendors'] > 0 ? 'rep-neg' : 'rep-muted' }}">{{ number_format($p['vendors'], 2) }}</td>
@@ -203,14 +215,16 @@
                             <td class="rep-num {{ $p['team_cost'] > 0 ? '' : 'rep-muted' }}">{{ number_format($p['team_cost'], 2) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" style="text-align: center;" class="rep-muted">{{ __('No projects yet.') }}</td></tr>
+                        <tr><td colspan="10" style="text-align: center;" class="rep-muted">{{ __('No projects yet.') }}</td></tr>
                     @endforelse
                 </tbody>
                 @if($projectStats->count() > 0)
                     <tfoot>
                         <tr style="font-weight: 800;">
                             <td>{{ __('Total') }}</td>
+                            <td></td>
                             <td class="rep-num">{{ number_format($projectStats->sum('agreed'), 2) }}</td>
+                            <td class="rep-num">{{ number_format($projectStats->sum('earned_month'), 2) }}</td>
                             <td class="rep-num">{{ number_format($projectStats->sum('received'), 2) }}</td>
                             <td class="rep-num">{{ number_format($projectStats->sum('remaining'), 2) }}</td>
                             <td class="rep-num">{{ number_format($projectStats->sum('vendors'), 2) }}</td>
@@ -268,6 +282,7 @@
                 datasets: [
                     { type: 'bar', label: '{{ __("Revenue") }}', data: series.map(r => r.revenue), backgroundColor: 'rgba(16, 185, 129, 0.8)', borderRadius: 4 },
                     { type: 'bar', label: '{{ __("Costs") }}', data: series.map(r => r.salaries + r.expenses + r.vendors), backgroundColor: 'rgba(239, 68, 68, 0.8)', borderRadius: 4 },
+                    { type: 'line', label: '{{ __("Collected") }}', data: series.map(r => r.collected), borderColor: '#f59e0b', backgroundColor: '#f59e0b', borderDash: [6, 4], tension: 0.3, pointRadius: 2 },
                     { type: 'line', label: '{{ __("Net Profit") }}', data: series.map(r => r.net), borderColor: '#328af1', backgroundColor: '#328af1', tension: 0.3, pointRadius: 3 }
                 ]
             },

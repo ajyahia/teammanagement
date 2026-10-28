@@ -11,10 +11,31 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::with(['client', 'service', 'employees'])->latest()->paginate(10);
-        return view('admin.projects.index', compact('projects'));
+        $status = $request->input('status');
+        $search = trim((string) $request->input('q'));
+
+        $query = Project::query()
+            ->when(in_array($status, ['pending', 'in_progress', 'completed', 'cancelled']), fn($q) => $q->where('status', $status))
+            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search) {
+                $w->whereHas('client', fn($c) => $c->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('service', fn($s) => $s->where('name', 'like', "%{$search}%"));
+            }));
+
+        // Totals cover every matching project, not just the visible page
+        $totals = (clone $query)->with(['payments', 'cycles.payments'])->get();
+        $summary = [
+            'revenue' => $totals->sum('total_revenue'),
+            'paid' => $totals->sum('total_paid'),
+            'due' => $totals->sum('due_amount'),
+        ];
+        $counts = Project::selectRaw('status, count(*) as c')->groupBy('status')->pluck('c', 'status');
+
+        $projects = $query->with(['client', 'service', 'employees', 'payments', 'cycles.payments'])
+            ->latest()->paginate(10)->withQueryString();
+
+        return view('admin.projects.index', compact('projects', 'summary', 'counts', 'status', 'search'));
     }
 
     public function create()
@@ -67,6 +88,10 @@ class ProjectController extends Controller
         // Money paid at creation is recorded as a real installment so it shows in
         // the treasury, reports and subscription totals (paid_amount is legacy only).
         $data['paid_amount'] = 0;
+
+        if (in_array($data['status'], ['completed', 'cancelled'])) {
+            $data['ended_at'] = today()->toDateString();
+        }
 
         $project = Project::create($data);
         $project->employees()->sync($employeeIds);
@@ -146,6 +171,11 @@ class ProjectController extends Controller
 
         $employeeIds = $this->assignmentPivot($data['assignments'] ?? []);
         unset($data['assignments']);
+
+        // Remember the day the client stopped working with us; reopening clears it
+        $closing = in_array($data['status'], ['completed', 'cancelled'])
+            || (in_array($data['billing_type'], ['monthly', 'yearly']) && ($data['subscription_status'] ?? null) === 'stopped');
+        $data['ended_at'] = $closing ? ($project->ended_at ?? today()->toDateString()) : null;
 
         $project->update($data);
         $project->employees()->sync($employeeIds);

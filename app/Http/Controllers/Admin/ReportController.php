@@ -22,19 +22,8 @@ class ReportController extends Controller
         $yearTotals = $reports->totals($series);
         $monthTotals = $series[(int) $month];
 
-        // Revenue by service
-        $services = Service::with(['projects.payments', 'projects.cycles.payments'])->get();
-        $serviceStats = $services->map(function ($service) use ($month, $year) {
-            $row = ['name' => $service->name, 'projects_count' => $service->projects->count(), 'month' => 0, 'year' => 0, 'all' => 0];
-            foreach ($service->projects as $project) {
-                [$all, $monthly, $yearly] = $this->projectRevenue($project, (int) $month, (int) $year);
-                $row['all'] += $all;
-                $row['month'] += $monthly;
-                $row['year'] += $yearly;
-            }
-
-            return $row;
-        })->sortByDesc('year')->values();
+        // Revenue by service, by the months its clients work with us
+        $serviceStats = $reports->revenueByService((int) $month, (int) $year);
 
         $projectStats = $reports->projectProfitability((int) $month, (int) $year);
         $dues = $reports->dues();
@@ -65,7 +54,7 @@ class ReportController extends Controller
             ->get();
 
         $employeeStats = $employees->map(function ($emp) use ($month, $year, $load, $attendance, $serviceNames) {
-            $active = $emp->projects->whereIn('status', \App\Services\ReportService::ACTIVE_STATUSES);
+            $active = $emp->projects->whereIn('status', \App\Models\Project::ACTIVE_STATUSES);
             $salary = (float) \App\Models\SalaryPayment::where('user_id', $emp->id)
                 ->where('month', (int) $month)->where('year', (int) $year)->sum('amount');
             $activeCount = $load[$emp->id] ?? 0;
@@ -88,28 +77,5 @@ class ReportController extends Controller
         })->sortByDesc('active_count')->values();
 
         return view('admin.reports.employees', compact('employeeStats', 'month', 'year', 'selectedDate'));
-    }
-    /**
-     * Money actually received for a project: [all time, selected month, selected year].
-     * Paid installments count by their paid date; subscription cycles marked
-     * paid without any payment record are counted as well.
-     */
-    private function projectRevenue($project, int $month, int $year): array
-    {
-        $items = $project->payments->where('status', 'paid')
-            ->map(fn($p) => ['amount' => (float) $p->amount, 'date' => $p->paid_at]);
-
-        if (in_array($project->billing_type, ['monthly', 'yearly'])) {
-            $items = $items->concat(
-                $project->cycles->filter(fn($c) => $c->is_paid && $c->payments->isEmpty())
-                    ->map(fn($c) => ['amount' => (float) $c->amount, 'date' => $c->paid_at])
-            );
-        }
-
-        $all = $items->sum('amount');
-        $yearly = $items->filter(fn($i) => $i['date'] && $i['date']->year === $year)->sum('amount');
-        $monthly = $items->filter(fn($i) => $i['date'] && $i['date']->year === $year && $i['date']->month === $month)->sum('amount');
-
-        return [$all, $monthly, $yearly];
     }
 }

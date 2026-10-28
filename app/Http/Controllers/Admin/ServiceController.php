@@ -10,7 +10,7 @@ class ServiceController extends Controller
 {
     public function index()
     {
-        $services = Service::with('components')->latest()->paginate(10);
+        $services = Service::with('components')->withCount(['projects', 'users'])->latest()->paginate(12);
         return view('admin.services.index', compact('services'));
     }
 

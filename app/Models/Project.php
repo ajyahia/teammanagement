@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
@@ -20,6 +21,7 @@ class Project extends Model
         'notes',
         'start_date',
         'deadline',
+        'ended_at',
         'page_count',
         'price_per_page',
     ];
@@ -27,10 +29,124 @@ class Project extends Model
     protected $casts = [
         'start_date' => 'date',
         'deadline' => 'date',
+        'ended_at' => 'date',
         'agreed_price' => 'decimal:2',
         'paid_amount' => 'decimal:2',
     ];
 
+    /** Statuses of a project that is still being worked on. */
+    public const ACTIVE_STATUSES = ['pending', 'in_progress'];
+
+    public function isSubscription(): bool
+    {
+        return in_array($this->billing_type, ['monthly', 'yearly']);
+    }
+
+    /** First month the client works with us. */
+    public function periodStart(): Carbon
+    {
+        return Carbon::parse($this->start_date ?? $this->created_at ?? now())->startOfMonth();
+    }
+
+    /**
+     * Last month the client works with us.
+     * Closed projects end when they were closed; running ones go on to today
+     * (or to the deadline when it is still ahead); stopped subscriptions end on their last billing.
+     */
+    public function periodEnd(): Carbon
+    {
+        $now = now()->startOfMonth();
+        $start = $this->periodStart();
+
+        if ($this->ended_at) {
+            $end = $this->ended_at->copy()->startOfMonth();
+        } elseif ($this->isSubscription()) {
+            $running = $this->subscription_status !== 'stopped' && in_array($this->status, self::ACTIVE_STATUSES);
+            $lastCycle = $this->cycles->max('billing_date');
+            $end = $running ? $now : ($lastCycle ? Carbon::parse($lastCycle)->startOfMonth() : $start);
+        } else {
+            $planned = Carbon::parse($this->deadline ?? $start)->startOfMonth();
+            $end = in_array($this->status, self::ACTIVE_STATUSES) && $planned->lt($now) ? $now : $planned;
+        }
+
+        return $end->lt($start) ? $start->copy() : $end;
+    }
+
+    /** @return string[] 'Y-m' for every month of the period (capped at 20 years). */
+    public function activeMonths(): array
+    {
+        $months = [];
+        $end = $this->periodEnd();
+        for ($d = $this->periodStart(), $i = 0; $d->lte($end) && $i < 240; $d->addMonth(), $i++) {
+            $months[] = $d->format('Y-m');
+        }
+
+        return $months;
+    }
+
+    /** Split an amount evenly over months; the last month takes the rounding remainder. */
+    private function spread(float $total, array $months): array
+    {
+        $each = round($total / max(1, count($months)), 2);
+        $left = round($total, 2);
+        $out = [];
+        foreach ($months as $i => $ym) {
+            $amount = $i === count($months) - 1 ? $left : $each;
+            $out[$ym] = $amount;
+            $left = round($left - $amount, 2);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Revenue earned per month ('Y-m' => amount), by the months the client works with us,
+     * whatever the date the money was received. Needs cycles loaded.
+     */
+    public function revenueByMonth(): array
+    {
+        $months = $this->activeMonths();
+        $price = (float) $this->agreed_price;
+
+        if (!$this->isSubscription()) {
+            return $this->spread($price, $months);
+        }
+
+        $out = [];
+        if ($this->billing_type === 'yearly') {
+            foreach ($months as $ym) {
+                $out[$ym] = round($price / 12, 2);
+            }
+
+            return $out;
+        }
+
+        // Monthly: the billed cycle amount when there is one, otherwise the agreed monthly price
+        $cycles = $this->cycles->groupBy(fn($c) => $c->billing_date->format('Y-m'))->map->sum('amount');
+        foreach ($months as $ym) {
+            $out[$ym] = isset($cycles[$ym]) ? (float) $cycles[$ym] : $price;
+        }
+
+        return $out;
+    }
+
+    /** Cost of the external workers per month ('Y-m' => amount), spread like the revenue. Needs vendors loaded. */
+    public function vendorCostByMonth(): array
+    {
+        $months = $this->activeMonths();
+        $out = array_fill_keys($months, 0.0);
+
+        foreach ($this->vendors as $vendor) {
+            $share = $vendor->is_recurring
+                ? array_fill_keys($months, (float) $vendor->agreed_cost)
+                : $this->spread((float) $vendor->agreed_cost, $months);
+            foreach ($share as $ym => $amount) {
+                $out[$ym] += $amount;
+            }
+        }
+
+        return $out;
+    }
     public function client()
     {
         return $this->belongsTo(Client::class);
