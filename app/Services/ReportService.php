@@ -194,6 +194,93 @@ class ReportService
     }
 
     /**
+     * Profit of every service for one month.
+     *
+     *   revenue earned by the service's projects (by the months the client works with us)
+     * - salaries of the people on the service's team (paid salary, or the base salary when not paid yet);
+     *   someone on several services is split equally between them
+     * - share of the general expenses, by headcount (4 of 10 people = 40% of the expenses)
+     * - expenses booked on its projects and the cost of its external workers
+     * = profit
+     *
+     * Employees with no service go to a "no service" row so the totals still match the company.
+     *
+     * @return array{rows: array<int, array<string, mixed>>, general_expenses: float, headcount: int}
+     */
+    public function serviceProfit(int $month, int $year): array
+    {
+        $ym = sprintf('%04d-%02d', $year, $month);
+        $upToNow = $ym <= now()->format('Y-m');
+
+        $services = \App\Models\Service::get(['id', 'name'])->keyBy('id');
+        $rows = [];
+        foreach ($services as $id => $service) {
+            $rows[$id] = $this->emptyServiceRow($service->name);
+        }
+        $rows[0] = $this->emptyServiceRow(null);
+
+        // Team and salaries
+        $paid = SalaryPayment::where('month', $month)->where('year', $year)->get()->groupBy('user_id')->map->sum('amount');
+        $employees = \App\Models\User::where('role', 'employee')->activeInMonth($month, $year)->with('services:id')->get();
+
+        foreach ($employees as $e) {
+            $salary = $upToNow ? (float) ($paid[$e->id] ?? $e->salary ?? 0) : 0.0;
+            $ids = $e->services->pluck('id')->filter(fn($id) => isset($rows[$id]))->values();
+            $ids = $ids->isEmpty() ? collect([0]) : $ids;
+            $weight = 1 / $ids->count();
+
+            foreach ($ids as $id) {
+                $rows[$id]['headcount'] += $weight;
+                $rows[$id]['salaries'] += $salary * $weight;
+                $rows[$id]['team'][] = ['name' => $e->name, 'salary' => round($salary * $weight, 2), 'share' => $weight];
+            }
+        }
+        $headcount = max(1, $employees->count());
+
+        // Expenses: project ones go straight to the project's service, general ones are shared by headcount
+        $expenses = Expense::whereMonth('expense_date', $month)->whereYear('expense_date', $year)->with('project:id,service_id')->get();
+        $general = (float) $expenses->whereNull('project_id')->sum('amount');
+        foreach ($expenses->whereNotNull('project_id') as $x) {
+            $sid = $x->project?->service_id;
+            if ($sid && isset($rows[$sid])) {
+                $rows[$sid]['project_expenses'] += (float) $x->amount;
+            }
+        }
+
+        // Revenue and external workers of the service's projects, by month of the period
+        foreach ($this->projects()->get() as $p) {
+            if (!isset($rows[$p->service_id])) {
+                continue;
+            }
+            $rows[$p->service_id]['revenue'] += (float) ($p->revenueByMonth()[$ym] ?? 0);
+            $rows[$p->service_id]['vendors'] += (float) ($p->vendorCostByMonth()[$ym] ?? 0);
+            $rows[$p->service_id]['projects'] += isset($p->revenueByMonth()[$ym]) ? 1 : 0;
+        }
+
+        foreach ($rows as $id => &$r) {
+            $r['general_expenses'] = $general * $r['headcount'] / $headcount;
+            $r['cost'] = $r['salaries'] + $r['general_expenses'] + $r['project_expenses'] + $r['vendors'];
+            $r['profit'] = $r['revenue'] - $r['cost'];
+            $r['share_percent'] = round($r['headcount'] / $headcount * 100, 1);
+        }
+        unset($r);
+
+        // Hide empty rows (a service with no team, no revenue and no costs; "no service" with nobody)
+        $rows = array_filter($rows, fn($r) => $r['headcount'] > 0 || $r['revenue'] != 0 || $r['cost'] != 0);
+        uasort($rows, fn($a, $b) => $b['profit'] <=> $a['profit']);
+
+        return ['rows' => array_values($rows), 'general_expenses' => $general, 'headcount' => $employees->count()];
+    }
+
+    private function emptyServiceRow(?string $name): array
+    {
+        return [
+            'name' => $name, 'projects' => 0, 'headcount' => 0.0, 'team' => [],
+            'revenue' => 0.0, 'salaries' => 0.0, 'general_expenses' => 0.0,
+            'project_expenses' => 0.0, 'vendors' => 0.0, 'cost' => 0.0, 'profit' => 0.0, 'share_percent' => 0.0,
+        ];
+    }
+    /**
      * What is still owed to us and what we still owe.
      *
      * @return array<string, mixed>

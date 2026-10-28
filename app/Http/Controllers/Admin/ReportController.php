@@ -45,6 +45,7 @@ class ReportController extends Controller
         $selectedDate = Carbon::createFromDate($year, $month, 1);
 
         [, $load] = $reports->teamCostByProject((int) $month, (int) $year);
+        $serviceProfit = $reports->serviceProfit((int) $month, (int) $year);
         $attendance = app(\App\Services\AttendanceService::class);
         $serviceNames = Service::pluck('name', 'id');
 
@@ -76,6 +77,6 @@ class ReportController extends Controller
             ];
         })->sortByDesc('active_count')->values();
 
-        return view('admin.reports.employees', compact('employeeStats', 'month', 'year', 'selectedDate'));
+        return view('admin.reports.employees', compact('employeeStats', 'month', 'year', 'selectedDate', 'serviceProfit'));
     }
 }
