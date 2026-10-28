@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('Client Login') }} - {{ config('app.name') }}</title>
+    <title>{{ __('Client Login') }} - Four</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
@@ -119,8 +121,8 @@
 
     <div class="login-container">
         <div class="logo">
-            <i class="ri-vip-crown-fill"></i>
-            <span style="font-weight: 700;">{{ __('Client Portal') }}</span>
+            <img src="/favicon.png" alt="Four" style="width: 44px; height: 44px; border-radius: 10px;">
+            <span style="font-weight: 700;">Four · {{ __('Client Portal') }}</span>
         </div>
         <h1>{{ __('Welcome Back') }}</h1>
         <p>{{ __('Log in to manage your projects and payments') }}</p>

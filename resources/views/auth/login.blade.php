@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('Login') }} - {{ __('Team Management System') }}</title>
+    <title>{{ __('Login') }} - Four</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
     
     <!-- Remix Icons CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
@@ -100,7 +102,7 @@
 
     <div class="login-card">
         <div class="login-logo">
-            <i class="ri-team-fill"></i>
+            <img src="/favicon.png" alt="Four" style="width: 72px; height: 72px; border-radius: 16px;">
         </div>
         <h2>{{ __('Welcome Back') }}</h2>
         <p>{{ __('Sign in to manage your attendance and profile') }}</p>

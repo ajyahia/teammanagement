@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') - Team Management System</title>
+    <title>@yield('title', 'Dashboard') - Four</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/favicon.png">
 
     <!-- Remix Icons CDN -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
@@ -91,8 +93,8 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-brand">
-                <i class="ri-team-fill"></i>
-                <span>{{ __('Team Manage') }}</span>
+                <img src="/favicon.png" alt="Four" class="brand-logo">
+                <span>Four</span>
             </div>
 
             <ul class="sidebar-menu">

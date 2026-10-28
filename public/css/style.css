@@ -95,6 +95,14 @@ h1, h2, h3, h4, h5, h6 {
     box-sizing: border-box;
 }
 
+.sidebar-brand .brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
 .sidebar-brand i {
     font-size: 24px;
     color: var(--color-primary);
@@ -892,7 +900,15 @@ html[dir="rtl"] .main-wrapper {
     width: calc(100% - 260px);
 }
 
-html[dir="rtl"] .sidebar-brand i {
+html[dir="rtl"] .sidebar-brand .brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.sidebar-brand i {
     margin-right: 0;
     margin-left: 12px;
 }
