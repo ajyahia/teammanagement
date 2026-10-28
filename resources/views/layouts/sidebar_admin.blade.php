@@ -73,7 +73,7 @@
 <li class="sidebar-item {{ request()->is('admin/reports/employees*') ? 'active' : '' }}">
     <a href="/admin/reports/employees">
         <i class="ri-bar-chart-grouped-fill"></i>
-        <span>{{ __('Employee Reports') }}</span>
+        <span>{{ __('Team Report') }}</span>
     </a>
 </li>
 

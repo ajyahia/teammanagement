@@ -77,12 +77,45 @@ class ReportService
         return $t;
     }
 
-    /** One row per project: what came in, what went out, what is left. Best profit first. */
-    public function projectProfitability()
+    /** Statuses of a project that is still being worked on. */
+    public const ACTIVE_STATUSES = ['pending', 'in_progress'];
+
+    /**
+     * Each employee's salary for the month, split across the active projects they are assigned to.
+     * Returns [projectId => cost] and [userId => projects count].
+     *
+     * @return array{0: array<int, float>, 1: array<int, int>}
+     */
+    public function teamCostByProject(int $month, int $year): array
     {
+        $salaries = SalaryPayment::where('month', $month)->where('year', $year)->get()
+            ->groupBy('user_id')->map->sum('amount');
+
+        $projects = Project::with('employees:id')->whereIn('status', self::ACTIVE_STATUSES)->get();
+
+        $load = [];
+        foreach ($projects as $p) {
+            foreach ($p->employees as $e) {
+                $load[$e->id] = ($load[$e->id] ?? 0) + 1;
+            }
+        }
+
+        $cost = [];
+        foreach ($projects as $p) {
+            $cost[$p->id] = (float) $p->employees->sum(fn($e) => (float) ($salaries[$e->id] ?? 0) / max(1, $load[$e->id]));
+        }
+
+        return [$cost, $load];
+    }
+
+    /** One row per project: what came in, what went out, what is left. Best profit first. */
+    public function projectProfitability(int $month = 0, int $year = 0)
+    {
+        [$teamCost] = $month && $year ? $this->teamCostByProject($month, $year) : [[]];
+
         return Project::with(['client', 'service', 'payments', 'cycles.payments', 'expenses', 'vendors.payments'])
             ->get()
-            ->map(function ($p) {
+            ->map(function ($p) use ($teamCost) {
                 $received = (float) $p->total_paid;
                 $vendors = (float) $p->vendor_paid;
                 $expenses = (float) $p->expenses->sum('amount');
@@ -98,6 +131,7 @@ class ReportService
                     'vendors' => $vendors,
                     'expenses' => $expenses,
                     'net' => round($received - $vendors - $expenses, 2),
+                    'team_cost' => round($teamCost[$p->id] ?? 0, 2),
                 ];
             })
             ->sortByDesc('net')

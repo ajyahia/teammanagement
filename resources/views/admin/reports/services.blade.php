@@ -170,7 +170,7 @@
     {{-- 3. Profit per project --}}
     <div class="card" style="margin-bottom: 24px;">
         <h4 class="rep-title"><i class="ri-briefcase-4-line" style="color: var(--color-primary);"></i> {{ __('Profit per Project') }}</h4>
-        <p class="rep-sub">{{ __('Everything since the project started: what the client paid, minus external workers and project expenses. Salaries are not included.') }}</p>
+        <p class="rep-sub">{{ __('Net = everything since the project started: what the client paid, minus external workers and project expenses, before salaries. Team cost is only for the selected month: each employee salary split across the active projects they work on.') }}</p>
         <div class="table-responsive">
             <table class="data-table">
                 <thead>
@@ -182,6 +182,7 @@
                         <th>{{ __('External Workers') }}</th>
                         <th>{{ __('Expenses') }}</th>
                         <th>{{ __('Net') }}</th>
+                        <th title="{{ __('Salaries of the assigned employees for the selected month, split across their active projects.') }}">{{ __('Team cost') }} ({{ $selectedDate->translatedFormat('F') }}) <i class="ri-information-line"></i></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -199,9 +200,10 @@
                             <td class="rep-num {{ $p['vendors'] > 0 ? 'rep-neg' : 'rep-muted' }}">{{ number_format($p['vendors'], 2) }}</td>
                             <td class="rep-num {{ $p['expenses'] > 0 ? 'rep-neg' : 'rep-muted' }}">{{ number_format($p['expenses'], 2) }}</td>
                             <td class="rep-num {{ $p['net'] >= 0 ? 'rep-pos' : 'rep-neg' }}" style="font-weight: 800;">{{ number_format($p['net'], 2) }}</td>
+                            <td class="rep-num {{ $p['team_cost'] > 0 ? '' : 'rep-muted' }}">{{ number_format($p['team_cost'], 2) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" style="text-align: center;" class="rep-muted">{{ __('No projects yet.') }}</td></tr>
+                        <tr><td colspan="8" style="text-align: center;" class="rep-muted">{{ __('No projects yet.') }}</td></tr>
                     @endforelse
                 </tbody>
                 @if($projectStats->count() > 0)
@@ -214,6 +216,7 @@
                             <td class="rep-num">{{ number_format($projectStats->sum('vendors'), 2) }}</td>
                             <td class="rep-num">{{ number_format($projectStats->sum('expenses'), 2) }}</td>
                             <td class="rep-num">{{ number_format($projectStats->sum('net'), 2) }}</td>
+                            <td class="rep-num">{{ number_format($projectStats->sum('team_cost'), 2) }}</td>
                         </tr>
                     </tfoot>
                 @endif

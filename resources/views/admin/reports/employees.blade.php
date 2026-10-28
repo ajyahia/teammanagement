@@ -1,34 +1,49 @@
 @extends('layouts.app')
 
-@section('title', __('Reports & Analytics'))
-@section('page_header', __('Reports & Analytics'))
+@section('title', __('Team Report'))
+@section('page_header', __('Team Report'))
 
 @section('sidebar_menu')
     @include('layouts.sidebar_admin')
 @endsection
 
 @section('content')
+    @php
+        $monthNames = collect(range(1, 12))->map(fn($m) => \Carbon\Carbon::create(2000, $m, 1)->translatedFormat('F'));
+    @endphp
+
+    <style>
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+        .team-card { margin-bottom: 0; }
+        .team-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .team-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+        .team-stat { padding: 10px 12px; border-radius: var(--radius-md); background: var(--bg-hover); }
+        .team-stat .label { font-size: 0.72rem; color: var(--text-secondary); }
+        .team-stat .value { font-weight: 800; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+        .team-section { font-size: 0.78rem; color: var(--text-secondary); margin: 12px 0 6px; }
+        .team-chip { display: inline-block; padding: 3px 10px; margin: 0 0 4px; border-radius: 999px; font-size: 0.78rem; background: rgba(59,130,246,0.12); color: var(--color-primary-light); }
+        .team-project { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.85rem; }
+    </style>
+
     <div class="card" style="margin-bottom: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
-                <h3 style="margin: 0; font-family: var(--font-title); font-weight: 700;">{{ __('Financial Reports') }}</h3>
-                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">{{ __('Track revenue and profits by service and employee') }}</p>
+                <h3 style="margin: 0; font-family: var(--font-title); font-weight: 700;">{{ __('Team Report') }}</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 4px 0 0;">
+                    {{ __('Who works on what, what each person costs and how present they are') }} · {{ $selectedDate->translatedFormat('F') }} {{ $year }}
+                </p>
             </div>
-            
             <form action="{{ route('admin.reports.employees') }}" method="GET" style="display: flex; gap: 10px; align-items: center;">
-                <select name="month" class="form-control" style="width: auto;">
-                    @for($m=1; $m<=12; $m++)
-                        <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}" {{ $month == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>
-                            {{ \Carbon\Carbon::create(2000, $m, 1)->translatedFormat('F') }}
-                        </option>
+                <select name="month" class="form-control" style="width: auto;" onchange="this.form.submit()">
+                    @foreach($monthNames as $i => $name)
+                        <option value="{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}" {{ (int) $month === $i + 1 ? 'selected' : '' }}>{{ $name }}</option>
+                    @endforeach
+                </select>
+                <select name="year" class="form-control" style="width: auto;" onchange="this.form.submit()">
+                    @for($y = date('Y'); $y >= 2020; $y--)
+                        <option value="{{ $y }}" {{ (int) $year === $y ? 'selected' : '' }}>{{ $y }}</option>
                     @endfor
                 </select>
-                <select name="year" class="form-control" style="width: auto;">
-                    @for($y=date('Y'); $y>=2020; $y--)
-                        <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-                <button type="submit" class="btn btn-primary">{{ __('Filter') }}</button>
             </form>
         </div>
     </div>
@@ -36,124 +51,63 @@
     <div class="card" style="margin-bottom: 24px; border-inline-start: 4px solid var(--color-primary);">
         <h4 style="margin-top: 0; font-weight: 600;"><i class="ri-information-line"></i> {{ __('How to read this report') }}</h4>
         <ul style="margin: 0; padding-inline-start: 20px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.9;">
-            <li><strong>{{ __('Revenue') }}</strong>: {{ __('money actually received from clients on the projects the employee is assigned to, counted by payment date. A project shared by several employees is split equally between them.') }}</li>
-            <li><strong>{{ __('Salary') }}</strong>: {{ __('salary actually paid to the employee for the selected month.') }}</li>
-            <li><strong>{{ __('Net') }}</strong>: {{ __('revenue minus salary. A negative number means the employee cost more than the money received from their projects in that period.') }}</li>
-            <li>{{ __('Pending installments are not counted until they are marked as Paid.') }}</li>
+            <li>{{ __('Revenue is not credited to individual employees: every project is a team effort. Revenue and profit are on the Financial Reports page, per project and per service.') }}</li>
+            <li><strong>{{ __('Salary') }}</strong>: {{ __('salary paid for the selected month.') }} <strong>{{ __('Per project') }}</strong>: {{ __('that salary divided by the active projects the employee is assigned to. This is the amount charged to each project as team cost.') }}</li>
+            <li><strong>{{ __('Attendance') }}</strong>: {{ __('a working day with no record counts as present.') }}</li>
         </ul>
     </div>
 
-    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
-        <!-- Employee Chart -->
-        <div class="card" style="flex: 1; min-width: 400px; margin-bottom: 0;">
-            <div style="width: 100%; height: 350px;">
-                <canvas id="employeeChart"></canvas>
-            </div>
-            @if($employeeStats->sum('monthly_revenue') == 0 && $employeeStats->sum('monthly_salary') == 0)
-                <p style="text-align: center; color: var(--text-secondary); margin: 10px 0 0;">{{ __('No payments or salaries were recorded in this month.') }}</p>
-            @endif
-        </div>
+    <div class="team-grid">
+        @forelse($employeeStats as $emp)
+            <div class="card team-card">
+                <div class="team-head">
+                    <div class="user-avatar" style="width: 42px; height: 42px; flex-shrink: 0;">{{ strtoupper(mb_substr($emp['name'], 0, 1)) }}</div>
+                    <div style="min-width: 0;">
+                        <strong>{{ $emp['name'] }}</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ $emp['job_title'] }}</div>
+                    </div>
+                </div>
 
-        <!-- Employees Report Table -->
-        <div class="card" style="flex: 2; min-width: 500px; margin-bottom: 0;">
-            <h4 style="font-family: var(--font-title); margin-top: 0; margin-bottom: 20px; font-weight: 600;">
-                <i class="ri-table-line" style="color: var(--orange); margin-right: 8px;"></i>
-                {{ __('Revenue by Employee') }}
-            </h4>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Employee') }}</th>
-                            <th>{{ __('Projects') }}</th>
-                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Revenue') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ $selectedDate->translatedFormat('F Y') }})</small></th>
-                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Salary') }}</th>
-                            <th style="background: rgba(24, 24, 38, 0.5);">{{ __('Monthly Net') }}</th>
-                            <th>{{ __('All-Time Revenue') }}</th>
-                            <th>{{ __('All-Time Net') }}</th>
-                            <th>{{ __('Attendance') }}<br><small style="color: var(--text-secondary); font-weight: normal;">({{ __('present / absent / leave') }})</small></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($employeeStats as $stat)
-                            <tr>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 12px;">
-                                        <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.85rem;">
-                                            {{ strtoupper(substr($stat['name'], 0, 1)) }}
-                                        </div>
-                                        <strong>{{ $stat['name'] }}</strong>
-                                    </div>
-                                </td>
-                                <td>{{ $stat['projects_count'] }}</td>
-                                <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--color-primary-light);">{{ number_format($stat['monthly_revenue'], 2) }}</td>
-                                <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: var(--red);">- {{ number_format($stat['monthly_salary'], 2) }}</td>
-                                <td style="background: rgba(24, 24, 38, 0.5); font-weight: bold; color: {{ $stat['monthly_profit'] >= 0 ? 'var(--green)' : 'var(--red)' }};">{{ number_format($stat['monthly_profit'], 2) }}</td>
-                                <td style="font-weight: bold;">{{ number_format($stat['all_time_revenue'], 2) }}</td>
-                                <td style="font-weight: bold; color: {{ $stat['all_time_profit'] >= 0 ? 'var(--green)' : 'var(--red)' }};">{{ number_format($stat['all_time_profit'], 2) }}</td>
-                                <td style="white-space: nowrap;">
-                                    <span style="color: #22c55e; font-weight: 700;">{{ $stat['attendance']['present'] }}</span> /
-                                    <span style="color: #ef4444; font-weight: 700;">{{ $stat['attendance']['absent'] }}</span> /
-                                    <span style="color: var(--orange); font-weight: 700;">{{ $stat['attendance']['vacation'] + $stat['attendance']['excused'] }}</span>
-                                </td>
-                            </tr>
-                        @endforeach
-                        @if(count($employeeStats) === 0)
-                            <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">{{ __('No employees found.') }}</td></tr>
-                        @endif
-                    </tbody>
-                </table>
+                <div class="team-stats">
+                    <div class="team-stat">
+                        <div class="label">{{ __('Active projects') }}</div>
+                        <div class="value">{{ $emp['active_count'] }}</div>
+                    </div>
+                    <div class="team-stat">
+                        <div class="label">{{ __('Salary') }}</div>
+                        <div class="value">{{ number_format($emp['salary'], 2) }}</div>
+                    </div>
+                    <div class="team-stat">
+                        <div class="label">{{ __('Per project') }}</div>
+                        <div class="value">{{ number_format($emp['salary_per_project'], 2) }}</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.88rem;">
+                    <span style="color: #22c55e; font-weight: 700;">{{ $emp['attendance']['present'] }}</span> {{ __('present') }} ·
+                    <span style="color: #ef4444; font-weight: 700;">{{ $emp['attendance']['absent'] }}</span> {{ __('absent') }} ·
+                    <span style="color: var(--orange); font-weight: 700;">{{ $emp['attendance']['vacation'] + $emp['attendance']['excused'] }}</span> {{ __('leave') }}
+                </div>
+
+                @if(count($emp['skills']))
+                    <div class="team-section">{{ __('Skills') }}</div>
+                    @foreach($emp['skills'] as $skill)
+                        <span class="team-chip">{{ $skill }}</span>
+                    @endforeach
+                @endif
+
+                <div class="team-section">{{ __('Working on') }} ({{ $emp['active_count'] }}) · {{ __('Completed') }}: {{ $emp['done_count'] }}</div>
+                @forelse($emp['active_projects'] as $p)
+                    <div class="team-project">
+                        <a href="{{ route('admin.projects.edit', $p['id']) }}" style="color: inherit; text-decoration: none; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">#{{ $p['id'] }} {{ $p['label'] }}</a>
+                        @if($p['role'])<span class="team-chip" style="margin: 0;">{{ $p['role'] }}</span>@endif
+                    </div>
+                @empty
+                    <div style="color: var(--text-secondary); font-size: 0.85rem;">{{ __('No active projects.') }}</div>
+                @endforelse
             </div>
-        </div>
+        @empty
+            <div class="card" style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">{{ __('No employees found.') }}</div>
+        @endforelse
     </div>
-    <!-- Chart.js Integration -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Common Chart Defaults for Dark Theme
-        Chart.defaults.color = '#a1a1aa';
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
-        Chart.defaults.font.family = "'Inter', 'Tajawal', sans-serif";
-
-        // Employee Bar Chart Data
-        const employeeNames = @json($employeeStats->pluck('name'));
-        const employeeRevenue = @json($employeeStats->pluck('monthly_revenue'));
-        const employeeSalary = @json($employeeStats->pluck('monthly_salary'));
-
-        new Chart(document.getElementById('employeeChart'), {
-            type: 'bar',
-            data: {
-                labels: employeeNames,
-                datasets: [
-                    {
-                        label: '{{ __("Revenue Generated") }}',
-                        data: employeeRevenue,
-                        backgroundColor: 'rgba(16, 185, 129, 0.8)', // Green
-                        borderRadius: 4
-                    },
-                    {
-                        label: '{{ __("Salary Paid") }}',
-                        data: employeeSalary,
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)', // Red
-                        borderRadius: 4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                },
-                plugins: {
-                    legend: { position: 'top' },
-                    title: {
-                        display: true,
-                        text: '{{ __("Employee Revenue vs Salary (Monthly)") }}',
-                        color: '#fff',
-                        font: { size: 16, weight: 'bold' }
-                    }
-                }
-            }
-        });
-    </script>
 @endsection

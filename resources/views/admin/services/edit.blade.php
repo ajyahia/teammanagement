@@ -27,6 +27,19 @@
                 @error('default_price')<span style="color: var(--red); font-size: 0.85rem; margin-top: 4px; display: block;">{{ $message }}</span>@enderror
             </div>
 
+            @php $selectedComponents = $service->components->pluck('id')->toArray(); @endphp
+            <div class="form-group">
+                <label class="form-label" title="{{ __('Pick the services this one is made of. When you create a project of this service you assign employees to each of them.') }}">
+                    {{ __('Made of (other services)') }} <i class="ri-information-line"></i>
+                </label>
+                <select name="component_ids[]" class="form-control" multiple size="5">
+                    @foreach($otherServices as $other)
+                        <option value="{{ $other->id }}" {{ in_array($other->id, (array) old('component_ids', $selectedComponents ?? [])) ? 'selected' : '' }}>{{ $other->name }}</option>
+                    @endforeach
+                </select>
+                <small style="color: var(--text-secondary);">{{ __('Optional. Example: Marketing = Video Editing + Logo Design. Hold Ctrl to pick several.') }}</small>
+            </div>
+
             <div class="form-group">
                 <label class="form-label">{{ __('Description') }}</label>
                 <textarea name="description" class="form-control" rows="4">{{ old('description', $service->description) }}</textarea>

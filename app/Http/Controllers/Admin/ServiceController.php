@@ -10,13 +10,14 @@ class ServiceController extends Controller
 {
     public function index()
     {
-        $services = Service::latest()->paginate(10);
+        $services = Service::with('components')->latest()->paginate(10);
         return view('admin.services.index', compact('services'));
     }
 
     public function create()
     {
-        return view('admin.services.create');
+        $otherServices = Service::orderBy('name')->get();
+        return view('admin.services.create', compact('otherServices'));
     }
 
     public function store(Request $request)
@@ -25,15 +26,22 @@ class ServiceController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'default_price' => 'required|numeric|min:0',
+            'component_ids' => 'nullable|array',
+            'component_ids.*' => 'exists:services,id',
         ]);
 
-        Service::create($data);
+        $componentIds = $data['component_ids'] ?? [];
+        unset($data['component_ids']);
+
+        $service = Service::create($data);
+        $service->components()->sync($componentIds);
         return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
     }
 
     public function edit(Service $service)
     {
-        return view('admin.services.edit', compact('service'));
+        $otherServices = Service::where('id', '!=', $service->id)->orderBy('name')->get();
+        return view('admin.services.edit', compact('service', 'otherServices'));
     }
 
     public function update(Request $request, Service $service)
@@ -42,9 +50,16 @@ class ServiceController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'default_price' => 'required|numeric|min:0',
+            'component_ids' => 'nullable|array',
+            'component_ids.*' => 'exists:services,id',
         ]);
 
+        $componentIds = $data['component_ids'] ?? [];
+        unset($data['component_ids']);
+
         $service->update($data);
+        // A service cannot contain itself
+        $service->components()->sync(array_values(array_diff($componentIds, [$service->id])));
         return redirect()->route('admin.services.index')->with('success', 'Service updated successfully.');
     }
 

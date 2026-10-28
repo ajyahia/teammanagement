@@ -1,7 +1,13 @@
 {{-- Shared project form fields for create & edit. $project is null on create. --}}
 @php
     $project = $project ?? null;
-    $selectedEmployees = old('employee_ids', $project ? $project->employees->pluck('id')->toArray() : []);
+    // Roles a project needs: the service itself plus the services it is made of
+    $rolesByService = $services->mapWithKeys(fn($sv) => [$sv->id => $sv->roles()->map(fn($r) => ['id' => $r->id, 'name' => $r->name])->values()]);
+    $employeePool = $employees->map(fn($e) => ['id' => $e->id, 'name' => $e->name, 'services' => $e->services->pluck('id')->values()])->values();
+    // Employees already assigned, grouped by the role (service) they cover
+    $selectedByRole = old('assignments', $project
+        ? $project->employees->groupBy(fn($e) => $e->pivot->service_id ?? $project->service_id)->map(fn($g) => $g->pluck('id')->all())->all()
+        : []);
 @endphp
 
 @if($errors->any())
@@ -56,15 +62,10 @@
     </div>
 
     {{-- Row 2: team & pricing --}}
-    <div class="form-group span-2">
-        <label class="form-label">{{ __('Assign To Employees') }}</label>
-        <select name="employee_ids[]" id="employee_ids" class="form-control select2-multiple" multiple>
-            @foreach($employees as $emp)
-                <option value="{{ $emp->id }}" data-services="{{ json_encode($emp->services->pluck('id')) }}" {{ in_array($emp->id, (array) $selectedEmployees) ? 'selected' : '' }}>
-                    {{ $emp->name }}
-                </option>
-            @endforeach
-        </select>
+    <div class="form-group span-full">
+        <label class="form-label">{{ __('Team') }}</label>
+        <div id="assignment_groups" class="assignment-groups"></div>
+        <small style="color: var(--text-secondary);">{{ __('Each part of the service has its own team. An employee shows up under the parts of the service he or she works in.') }}</small>
     </div>
 
     <div class="form-group" id="subscription_status_group" style="display: none;">
@@ -199,6 +200,12 @@
             grid-column: 1 / -1;
         }
     }
+    .assignment-groups {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+        margin-bottom: 6px;
+    }
     .required-star {
         color: var(--red, #ec454f);
     }
@@ -272,40 +279,63 @@
 
         toggleBillingFields();
 
-        // Employee Service Filtering
+        // Team assignment: one employee picker per role (the service + the services it is made of)
+        const rolesByService = @json($rolesByService);
+        const employeePool = @json($employeePool);
+        const selectedByRole = @json($selectedByRole);
+        const groupsBox = document.getElementById('assignment_groups');
         const serviceSelect = document.querySelector('select[name="service_id"]');
-        const employeeSelect = document.getElementById('employee_ids');
 
-        function filterEmployees() {
-            const serviceId = parseInt(serviceSelect.value);
-
-            Array.from(employeeSelect.options).forEach(option => {
-                if (!serviceId) {
-                    option.disabled = false;
-                    return;
-                }
-
-                const services = JSON.parse(option.getAttribute('data-services') || '[]');
-                option.disabled = !services.includes(serviceId);
+        function currentSelection() {
+            // Keep whatever is already picked when the service changes
+            const picked = {};
+            groupsBox.querySelectorAll('select').forEach(sel => {
+                picked[sel.dataset.role] = Array.from(sel.selectedOptions).map(o => parseInt(o.value));
             });
-            // Re-initialize Select2 to apply the disabled states
-            $(employeeSelect).select2({
-                placeholder: "{{ __('Select options...') }}",
-                allowClear: true,
-                width: '100%'
+            return Object.keys(picked).length ? picked : selectedByRole;
+        }
+
+        function buildGroups() {
+            const picked = currentSelection();
+            const roles = rolesByService[serviceSelect.value] || [];
+            groupsBox.innerHTML = '';
+
+            if (!roles.length) {
+                groupsBox.innerHTML = '<div style="color: var(--text-secondary); font-size: 0.85rem;">{{ __('Choose a service first.') }}</div>';
+                return;
+            }
+
+            roles.forEach(role => {
+                const wrap = document.createElement('div');
+                wrap.className = 'assignment-group';
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.textContent = role.name;
+                const sel = document.createElement('select');
+                sel.name = 'assignments[' + role.id + '][]';
+                sel.dataset.role = role.id;
+                sel.multiple = true;
+                sel.className = 'form-control';
+
+                const chosen = (picked[role.id] || []).map(Number);
+                employeePool.filter(e => e.services.includes(role.id) || chosen.includes(e.id)).forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.id;
+                    opt.textContent = e.name;
+                    opt.selected = chosen.includes(e.id);
+                    sel.appendChild(opt);
+                });
+
+                wrap.appendChild(label);
+                wrap.appendChild(sel);
+                groupsBox.appendChild(wrap);
+                $(sel).select2({ placeholder: "{{ __('Select options...') }}", allowClear: true, width: '100%' });
             });
         }
 
         if (serviceSelect) {
-            serviceSelect.addEventListener('change', function() {
-                filterEmployees();
-                // Drop employees that don't offer the newly selected service
-                Array.from(employeeSelect.options).forEach(opt => {
-                    if (opt.disabled) opt.selected = false;
-                });
-                $(employeeSelect).trigger('change');
-            });
-            filterEmployees();
+            serviceSelect.addEventListener('change', buildGroups);
+            buildGroups();
         }
     });
 </script>

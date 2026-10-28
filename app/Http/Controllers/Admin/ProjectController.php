@@ -20,7 +20,7 @@ class ProjectController extends Controller
     public function create()
     {
         $clients = Client::orderBy('name')->get();
-        $services = Service::orderBy('name')->get();
+        $services = Service::with('components')->orderBy('name')->get();
         $employees = User::with('services')->where('role', 'employee')->activeOn()->orderBy('name')->get();
         return view('admin.projects.create', compact('clients', 'services', 'employees'));
     }
@@ -30,8 +30,9 @@ class ProjectController extends Controller
         $data = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'service_id' => 'required|exists:services,id',
-            'employee_ids' => 'nullable|array',
-            'employee_ids.*' => 'exists:users,id',
+            'assignments' => 'nullable|array',
+            'assignments.*' => 'nullable|array',
+            'assignments.*.*' => 'exists:users,id',
             'agreed_price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'paid_at' => 'nullable|date',
@@ -57,11 +58,11 @@ class ProjectController extends Controller
             $data['price_per_page'] = null;
         }
 
-        $employeeIds = $data['employee_ids'] ?? [];
+        $employeeIds = $this->assignmentPivot($data['assignments'] ?? []);
         $initialPaid = (float) ($data['paid_amount'] ?? 0);
         $initialPaidAt = $data['paid_at'] ?? now()->toDateString();
         $installmentAmount = (float) ($data['installment_amount'] ?? 0);
-        unset($data['employee_ids'], $data['paid_at'], $data['installment_amount']);
+        unset($data['assignments'], $data['paid_at'], $data['installment_amount']);
 
         // Money paid at creation is recorded as a real installment so it shows in
         // the treasury, reports and subscription totals (paid_amount is legacy only).
@@ -103,7 +104,7 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         $clients = Client::orderBy('name')->get();
-        $services = Service::orderBy('name')->get();
+        $services = Service::with('components')->orderBy('name')->get();
         // Keep already-assigned employees selectable even if they were deactivated
         $assignedIds = $project->employees()->pluck('users.id');
         $employees = User::with('services')->where('role', 'employee')
@@ -117,8 +118,9 @@ class ProjectController extends Controller
         $data = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'service_id' => 'required|exists:services,id',
-            'employee_ids' => 'nullable|array',
-            'employee_ids.*' => 'exists:users,id',
+            'assignments' => 'nullable|array',
+            'assignments.*' => 'nullable|array',
+            'assignments.*.*' => 'exists:users,id',
             'agreed_price' => 'required|numeric|min:0',
             'paid_amount' => 'required|numeric|min:0',
             'status' => 'required|string|in:pending,in_progress,completed,cancelled',
@@ -142,12 +144,28 @@ class ProjectController extends Controller
             $data['price_per_page'] = null;
         }
 
-        $employeeIds = $data['employee_ids'] ?? [];
-        unset($data['employee_ids']);
+        $employeeIds = $this->assignmentPivot($data['assignments'] ?? []);
+        unset($data['assignments']);
 
         $project->update($data);
         $project->employees()->sync($employeeIds);
         return redirect()->route('admin.projects.index')->with('success', __('Project updated successfully.'));
+    }
+
+    /**
+     * [roleServiceId => [userIds]] -> sync() payload [userId => ['service_id' => roleServiceId]].
+     * A user picked for several roles is stored once, under the first role.
+     */
+    private function assignmentPivot(array $assignments): array
+    {
+        $pivot = [];
+        foreach ($assignments as $serviceId => $userIds) {
+            foreach ((array) $userIds as $userId) {
+                $pivot[(int) $userId] ??= ['service_id' => (int) $serviceId];
+            }
+        }
+
+        return $pivot;
     }
 
     public function destroy(Project $project)

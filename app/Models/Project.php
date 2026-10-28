@@ -43,7 +43,7 @@ class Project extends Model
 
     public function employees()
     {
-        return $this->belongsToMany(User::class, 'project_user');
+        return $this->belongsToMany(User::class, 'project_user')->withPivot('service_id');
     }
 
     public function getProfitAttribute()

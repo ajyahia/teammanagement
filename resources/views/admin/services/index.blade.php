@@ -37,7 +37,16 @@
                 <tbody>
                     @forelse($services as $service)
                         <tr>
-                            <td><strong>{{ $service->name }}</strong></td>
+                            <td>
+                                <strong>{{ $service->name }}</strong>
+                                @if($service->components->count())
+                                    <div style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                                        @foreach($service->components as $c)
+                                            <span class="badge" style="background: rgba(59,130,246,0.12); color: var(--color-primary-light); font-size: 0.72rem;">{{ $c->name }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </td>
                             <td><span class="badge badge-present">{{ number_format($service->default_price, 2) }}</span></td>
                             <td>{{ Str::limit($service->description, 50) ?: '-' }}</td>
                             <td>
