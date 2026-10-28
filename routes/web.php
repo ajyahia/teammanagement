@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
         
         Route::resource('services', AdminServiceController::class)->except(['show']);
         Route::resource('projects', AdminProjectController::class)->except(['show']);
+        Route::patch('/projects/{project}/subscription', [AdminProjectController::class, 'toggleSubscription'])->name('projects.subscription.toggle');
         
         // Project Payments
         Route::post('/projects/{project}/payments', [AdminProjectPaymentController::class, 'store'])->name('projects.payments.store');

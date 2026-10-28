@@ -53,6 +53,21 @@
             </span>
         </div>
 
+        @if($project->pauses->count())
+            <div style="margin-bottom: 20px; padding: 12px 16px; border-radius: var(--radius-md); background: var(--bg-hover); font-size: 0.88rem;">
+                <strong><i class="ri-history-line"></i> {{ __('Stop / start history') }}</strong>
+                <div style="margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    @foreach($project->pauses as $pause)
+                        <span class="badge" style="background: rgba(245,158,11,0.12); color: var(--orange);">
+                            {{ __('Stopped') }} {{ $pause->paused_at->format('Y-m-d') }}
+                            → {{ $pause->resumed_at ? __('started again') . ' ' . $pause->resumed_at->format('Y-m-d') : __('still stopped') }}
+                        </span>
+                    @endforeach
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 6px;">{{ __('Months fully inside a stop are not counted as revenue in the reports.') }}</div>
+            </div>
+        @endif
+
         <form action="{{ route('admin.projects.cycles.store', $project->id) }}" method="POST" style="display: flex; gap: 15px; margin-bottom: 24px; align-items: flex-end; flex-wrap: wrap;">
             @csrf
             <div class="form-group" style="flex: 1; min-width: 160px; margin-bottom: 0;">

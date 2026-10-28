@@ -61,7 +61,10 @@ class Project extends Model
         if ($this->ended_at) {
             $end = $this->ended_at->copy()->startOfMonth();
         } elseif ($this->isSubscription()) {
-            $running = $this->subscription_status !== 'stopped' && in_array($this->status, self::ACTIVE_STATUSES);
+            // Stopped subscriptions with a recorded stop keep running to today: the stopped months
+            // are skipped by activeMonths(). Old ones with no history end on their last billing.
+            $legacyStopped = $this->subscription_status === 'stopped' && $this->pauses->isEmpty();
+            $running = in_array($this->status, self::ACTIVE_STATUSES) && !$legacyStopped;
             $lastCycle = $this->cycles->max('billing_date');
             $end = $running ? $now : ($lastCycle ? Carbon::parse($lastCycle)->startOfMonth() : $start);
         } else {
@@ -78,10 +81,63 @@ class Project extends Model
         $months = [];
         $end = $this->periodEnd();
         for ($d = $this->periodStart(), $i = 0; $d->lte($end) && $i < 240; $d->addMonth(), $i++) {
-            $months[] = $d->format('Y-m');
+            $ym = $d->format('Y-m');
+            if (!$this->isPausedIn($ym)) {
+                $months[] = $ym;
+            }
         }
 
         return $months;
+    }
+
+    /**
+     * A month is skipped when the subscription was stopped before it began and started again
+     * after it ended. The month it was stopped in and the month it resumed in still count.
+     */
+    private function isPausedIn(string $ym): bool
+    {
+        foreach ($this->pauses as $pause) {
+            $from = $pause->paused_at->format('Y-m');
+            $to = $pause->resumed_at?->format('Y-m');
+            if ($from < $ym && ($to === null || $to > $ym)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function pauses()
+    {
+        return $this->hasMany(ProjectPause::class)->orderBy('paused_at');
+    }
+
+    /** Stop a subscription. It can be started again later; the history is kept. */
+    public function stopSubscription(): void
+    {
+        if ($this->subscription_status === 'stopped') {
+            return;
+        }
+        $this->update(['subscription_status' => 'stopped']);
+        $this->pauses()->create(['paused_at' => today()]);
+    }
+
+    /** Start a stopped subscription again and bill the current month. */
+    public function resumeSubscription(): void
+    {
+        if ($this->subscription_status === 'active') {
+            return;
+        }
+        $this->update(['subscription_status' => 'active']);
+        $this->pauses()->whereNull('resumed_at')->update(['resumed_at' => today()]);
+
+        $month = now()->startOfMonth();
+        $billed = $this->billing_type === 'yearly'
+            ? $this->cycles()->whereYear('billing_date', $month->year)->exists()
+            : $this->cycles()->whereYear('billing_date', $month->year)->whereMonth('billing_date', $month->month)->exists();
+        if (!$billed) {
+            $this->cycles()->create(['billing_date' => $month, 'amount' => $this->agreed_price, 'is_paid' => false]);
+        }
     }
 
     /** Split an amount evenly over months; the last month takes the rounding remainder. */

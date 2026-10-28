@@ -32,7 +32,7 @@ class ProjectController extends Controller
         ];
         $counts = Project::selectRaw('status, count(*) as c')->groupBy('status')->pluck('c', 'status');
 
-        $projects = $query->with(['client', 'service', 'employees', 'payments', 'cycles.payments'])
+        $projects = $query->with(['client', 'service', 'employees', 'payments', 'cycles.payments', 'pauses'])
             ->latest()->paginate(10)->withQueryString();
 
         return view('admin.projects.index', compact('projects', 'summary', 'counts', 'status', 'search'));
@@ -172,14 +172,43 @@ class ProjectController extends Controller
         $employeeIds = $this->assignmentPivot($data['assignments'] ?? []);
         unset($data['assignments']);
 
-        // Remember the day the client stopped working with us; reopening clears it
-        $closing = in_array($data['status'], ['completed', 'cancelled'])
-            || (in_array($data['billing_type'], ['monthly', 'yearly']) && ($data['subscription_status'] ?? null) === 'stopped');
+        // Remember the day the project was closed; reopening clears it.
+        // A stopped subscription is not closed: it keeps a stop/resume history instead.
+        $closing = in_array($data['status'], ['completed', 'cancelled']);
         $data['ended_at'] = $closing ? ($project->ended_at ?? today()->toDateString()) : null;
 
+        $newStatus = $data['subscription_status'] ?? null;
+        unset($data['subscription_status']);
+
         $project->update($data);
+
+        if (in_array($project->billing_type, ['monthly', 'yearly'])) {
+            if ($newStatus === 'stopped') {
+                $project->stopSubscription();
+            } elseif ($newStatus === 'active') {
+                $project->resumeSubscription();
+            }
+        } else {
+            $project->update(['subscription_status' => null]);
+        }
         $project->employees()->sync($employeeIds);
         return redirect()->route('admin.projects.index')->with('success', __('Project updated successfully.'));
+    }
+
+    /** Stop a subscription or start it again from the projects list. */
+    public function toggleSubscription(Project $project)
+    {
+        abort_unless($project->isSubscription(), 404);
+
+        if ($project->subscription_status === 'stopped') {
+            $project->resumeSubscription();
+            $message = __('Subscription started again.');
+        } else {
+            $project->stopSubscription();
+            $message = __('Subscription stopped.');
+        }
+
+        return back()->with('success', $message);
     }
 
     /**

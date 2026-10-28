@@ -26,7 +26,7 @@ class ReportService
     /** Projects with everything the monthly accrual needs. */
     private function projects()
     {
-        return Project::with(['cycles', 'vendors', 'employees:id']);
+        return Project::with(['cycles', 'vendors', 'employees:id', 'pauses']);
     }
 
     /**
@@ -131,7 +131,7 @@ class ReportService
         [$teamCost] = $month && $year ? $this->teamCostByProject($month, $year) : [[]];
         $ym = $month && $year ? sprintf('%04d-%02d', $year, $month) : null;
 
-        return Project::with(['client', 'service', 'payments', 'cycles.payments', 'expenses', 'vendors.payments'])
+        return Project::with(['client', 'service', 'payments', 'cycles.payments', 'expenses', 'vendors.payments', 'pauses'])
             ->get()
             ->map(function ($p) use ($teamCost, $ym) {
                 $received = (float) $p->total_paid;
@@ -173,7 +173,7 @@ class ReportService
         $ym = sprintf('%04d-%02d', $year, $month);
         $now = now()->format('Y-m');
 
-        return \App\Models\Service::with(['projects.cycles'])->get()->map(function ($service) use ($ym, $year, $now) {
+        return \App\Models\Service::with(['projects.cycles', 'projects.pauses'])->get()->map(function ($service) use ($ym, $year, $now) {
             $row = ['name' => $service->name, 'projects_count' => $service->projects->count(), 'month' => 0.0, 'year' => 0.0, 'all' => 0.0];
             foreach ($service->projects as $project) {
                 foreach ($project->revenueByMonth() as $m => $amount) {

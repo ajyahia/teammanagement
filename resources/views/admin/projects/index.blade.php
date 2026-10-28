@@ -137,7 +137,7 @@
                                         @if($project->subscription_status === 'active')
                                             <span class="badge badge-present">{{ __('Active') }}</span>
                                         @else
-                                            <span class="badge badge-absent">{{ __('Stopped') }}</span>
+                                            <span class="badge badge-absent">{{ __('Stopped') }}@if($project->pauses->last()) · {{ $project->pauses->last()->paused_at->format('Y-m-d') }}@endif</span>
                                         @endif
                                     @elseif($project->billing_type === 'per_page')
                                         <span class="badge badge-excused">{{ __('Per Page (Books)') }}</span>
@@ -171,6 +171,21 @@
                             </td>
                             <td>
                                 <div class="prj-actions">
+                                    @if($isSub)
+                                        <form action="{{ route('admin.projects.subscription.toggle', $project->id) }}" method="POST" style="margin: 0;">
+                                            @csrf
+                                            @method('PATCH')
+                                            @if($project->subscription_status === 'stopped')
+                                                <button type="submit" class="btn-icon btn-success" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);" title="{{ __('Start the subscription again') }}">
+                                                    <i class="ri-play-circle-line"></i>
+                                                </button>
+                                            @else
+                                                <button type="submit" class="btn-icon btn-secondary" style="color: var(--orange);" title="{{ __('Stop the subscription (it can be started again later)') }}">
+                                                    <i class="ri-pause-circle-line"></i>
+                                                </button>
+                                            @endif
+                                        </form>
+                                    @endif
                                     <a href="{{ route('admin.projects.edit', $project->id) }}#payments" class="btn-icon btn-success" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);" title="{{ __('Manage Payments / Installments') }}">
                                         <i class="ri-money-dollar-circle-fill"></i>
                                     </a>
